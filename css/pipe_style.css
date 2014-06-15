@@ -1,0 +1,12 @@
+html{
+    height:100%;
+}
+
+body{
+    position:absolute;
+    margin:0px;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+}
