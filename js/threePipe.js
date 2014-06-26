@@ -12,7 +12,13 @@ function getCursorPosition(e) {
 }
 
 
+var mouseState = {x:0,y:0,right:false,left:false}
 
+document.addEventListener('mousemove',function(e){
+    var cp = getCursorPosition(e)
+    mouseState.x = cp[0];
+    mouseState.y = cp[1];
+},false)
 
 
 
@@ -38,7 +44,7 @@ function onResize(){
 
 }
 
-onResize()
+
 
 window.addEventListener('resize', onResize, false);
 
@@ -46,13 +52,15 @@ var scene = new THREE.Scene();
 
 document.body.appendChild(renderer.domElement);
 
-var pGeometry = new THREE.PlaneGeometry(400,400)
-//var pMaterial = new THREE.MeshBasicMaterial({color:0xa0a0a0,wireframe:false,opacity:0.3,transparent:true});
-//var plane = new THREE.Mesh(pGeometry,pMaterial);
-//scene.add(plane);
 
 var sGeom = new THREE.SphereGeometry(0.1)
 var sMat = new THREE.MeshBasicMaterial({color:0xff0000})
+
+var cGeom = new THREE.CylinderGeometry(0.1,0.1,1)
+var cTrans = new THREE.Matrix4()
+cGeom.applyMatrix(cTrans.makeTranslation(0,0.5,0))
+cGeom.applyMatrix(cTrans.makeRotationX(Math.PI/2))
+var cMat = new THREE.MeshBasicMaterial({color:0x00ff00})
 
 var axisHelper = new THREE.AxisHelper(3);
 scene.add(axisHelper);
@@ -63,10 +71,14 @@ orthoCamera.lookAt(new THREE.Vector3(0,0,0));
 
 function render(){
     requestAnimationFrame(render);
+    
+    trackerNode.followOnScreen(mouseState.x,mouseState.y)
+    
     renderer.render(scene,orthoCamera);
+
 }
 
-render()
+
 
 
 document.addEventListener("wheel",function(e){
@@ -110,8 +122,47 @@ node.newNode = function(e){
     
 }
 
+var trackerNode = {}
 
+trackerNode.createNode = function(){
+    trackerNode.mesh = new THREE.Mesh(sGeom,sMat)
+    scene.add(trackerNode.mesh)
+    
+    trackerNode.cylinder = new THREE.Mesh(cGeom,cMat)
+    scene.add(trackerNode.cylinder)
+}
+
+trackerNode.followOnScreen = function(x,y){
+    var canvasX = 2*((x - renderer.domElement.offsetLeft)/canvasSize[0]) - 1;
+    var canvasY = 1 - 2*((y - renderer.domElement.offsetTop)/canvasSize[1]);
+
+    var mouseVector = new THREE.Vector3(canvasX,canvasY,0)
+
+    var projector = new THREE.Projector();
+    var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
+
+    var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
+
+    var iPoint = raycaster.ray.intersectPlane(iPlane)
+
+    trackerNode.mesh.position.copy(iPoint)
+    
+    trackerNode.cylinder.scale.set(1,1,iPoint.length())
+    trackerNode.cylinder.lookAt(iPoint)
+    
+    
+
+}
+
+
+onResize()
+
+trackerNode.createNode()
 
 document.addEventListener("click",node.newNode,false)
+
+renderer.render(scene,orthoCamera);
+
+render()
     
     
