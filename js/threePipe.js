@@ -46,10 +46,10 @@ var scene = new THREE.Scene();
 
 document.body.appendChild(renderer.domElement);
 
-var pGeometry = new THREE.PlaneGeometry(20,20,20,20)
-var pMaterial = new THREE.MeshBasicMaterial({color:0xa0a0a0,wireframe:true});
-var plane = new THREE.Mesh(pGeometry,pMaterial);
-scene.add(plane);
+var pGeometry = new THREE.PlaneGeometry(400,400)
+//var pMaterial = new THREE.MeshBasicMaterial({color:0xa0a0a0,wireframe:false,opacity:0.3,transparent:true});
+//var plane = new THREE.Mesh(pGeometry,pMaterial);
+//scene.add(plane);
 
 var sGeom = new THREE.SphereGeometry(0.1)
 var sMat = new THREE.MeshBasicMaterial({color:0xff0000})
@@ -63,8 +63,6 @@ orthoCamera.lookAt(new THREE.Vector3(0,0,0));
 
 function render(){
     requestAnimationFrame(render);
-    //cube.rotation.x += 0.1;
-    //cFrame.rotation.x += 0.1;
     renderer.render(scene,orthoCamera);
 }
 
@@ -88,6 +86,8 @@ document.addEventListener("wheel",function(e){
 var node = {}
 
 node.newNode = function(e){
+    //document.removeEventListener("click",node.newNode,false)
+    
     var canvasCoords = getCursorPosition(e);
     //correct for canvas position:
     canvasCoords[0] = 2*((canvasCoords[0] - renderer.domElement.offsetLeft)/canvasSize[0]) - 1;
@@ -98,7 +98,9 @@ node.newNode = function(e){
     var projector = new THREE.Projector();
     var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
     
-    var iPoint = raycaster.intersectObject(plane)[0].point
+    var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
+    
+    var iPoint = raycaster.ray.intersectPlane(iPlane)
     
     var nodeMesh = new THREE.Mesh(sGeom,sMat)
     nodeMesh.position=iPoint
@@ -107,6 +109,8 @@ node.newNode = function(e){
     console.log(iPoint)
     
 }
+
+
 
 document.addEventListener("click",node.newNode,false)
     
