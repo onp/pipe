@@ -140,15 +140,28 @@ trackerNode.followOnScreen = function(x,y){
 
     var projector = new THREE.Projector();
     var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
+	
+	var x0 = new THREE.Vector3(-500,0,0)
+	var x1 = new THREE.Vector3(500,0,0)
+	var xPt = new THREE.Vector3()
+	var xd = raycaster.ray.distanceSqToSegment(x0,x1,null,xPt)
+	
+	var y0 = new THREE.Vector3(0,-500,0)
+	var y1 = new THREE.Vector3(0,500,0)
+	var yPt = new THREE.Vector3()
+	var yd = raycaster.ray.distanceSqToSegment(y0,y1,null,yPt)
+	
+	var z0 = new THREE.Vector3(0,0,-500)
+	var z1 = new THREE.Vector3(0,0,500)
+	var zPt = new THREE.Vector3()
+	var zd = raycaster.ray.distanceSqToSegment(z0,z1,null,zPt)
+	
+	var pt = (xd < yd) ? ((xd < zd)? xPt : zPt) : ((yd < zd) ? yPt : zPt)
 
-    var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
+    trackerNode.mesh.position.copy(pt)
 
-    var iPoint = raycaster.ray.intersectPlane(iPlane)
-
-    trackerNode.mesh.position.copy(iPoint)
-    
-    trackerNode.cylinder.scale.set(1,1,iPoint.length())
-    trackerNode.cylinder.lookAt(iPoint)
+    trackerNode.cylinder.scale.set(1,1,pt.length())
+    trackerNode.cylinder.lookAt(pt)
     
     
 
