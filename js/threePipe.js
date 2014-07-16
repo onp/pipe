@@ -62,20 +62,30 @@ document.body.appendChild(renderer.domElement);
 
 
 var sGeom = new THREE.SphereGeometry(0.1)
-var sMat = new THREE.MeshBasicMaterial({color:0xff0000})
+var sMat = new THREE.MeshLambertMaterial({color:0xff0000})
 
 var cGeom = new THREE.CylinderGeometry(0.1,0.1,1)
 var cTrans = new THREE.Matrix4()
 cGeom.applyMatrix(cTrans.makeTranslation(0,0.5,0))
 cGeom.applyMatrix(cTrans.makeRotationX(Math.PI/2))
-var cMat = new THREE.MeshBasicMaterial({color:0x00ff00})
+var cMat = new THREE.MeshLambertMaterial({color:0x00ff00})
 
 var axisHelper = new THREE.AxisHelper(3);
 scene.add(axisHelper);
 
+var light = new THREE.PointLight(0xffffff);
+light.position.set(200, 0, 200);
+scene.add(light);
+
+var light2 = new THREE.PointLight(0x404040);
+light2.position.set(-200, 0, -200);
+scene.add(light2);
+
 orthoCamera.position.set(200,200,200);
 orthoCamera.up = new THREE.Vector3(0,0,1);
 orthoCamera.lookAt(new THREE.Vector3(0,0,0));
+
+var controls = new THREE.OrbitControls(orthoCamera, renderer.domElement);
 
 function render(){
     requestAnimationFrame(render);
@@ -100,37 +110,6 @@ document.addEventListener("wheel",function(e){
 
 },false)
 
-
-
-
-
-var node = {}
-
-node.newNode = function(e){
-    //document.removeEventListener("click",node.newNode,false)
-    
-    var canvasCoords = getCursorPosition(e);
-    //correct for canvas position:
-    canvasCoords[0] = 2*((canvasCoords[0] - renderer.domElement.offsetLeft)/canvasSize[0]) - 1;
-    canvasCoords[1] = 1 - 2*((canvasCoords[1] - renderer.domElement.offsetTop)/canvasSize[1]);
-    
-    var mouseVector = new THREE.Vector3(canvasCoords[0],canvasCoords[1],0)
-    
-    var projector = new THREE.Projector();
-    var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
-    
-    var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
-    
-    var iPoint = raycaster.ray.intersectPlane(iPlane)
-    
-    var nodeMesh = new THREE.Mesh(sGeom,sMat)
-    nodeMesh.position=iPoint
-    scene.add(nodeMesh)
-    console.log('added')
-    console.log(iPoint)
-    
-}
-
 var cursorNode = {}
 
 cursorNode.callClick = function(e){
@@ -139,6 +118,10 @@ cursorNode.callClick = function(e){
 
 cursorNode.callFrame = function(e){
     cursorNode.onFrame(e)
+}
+
+cursorNode.callKeyDown = function(e){
+    cursorNode.onKeyDown(e)
 }
 
 cursorNode.createModeOnClick = function(e){
@@ -164,9 +147,14 @@ cursorNode.createModeOnFrame = function(e){
     updateCoords(iPoint)
 }
 
+cursorNode.createModeOnKeyDown = function(e){
+    return
+}
+
 cursorNode.createMode = function(){
     cursorNode.onClick = cursorNode.createModeOnClick
     cursorNode.onFrame = cursorNode.createModeOnFrame
+    cursorNode.onKeyDown = cursorNode.createModeOnKeyDown
     
     cursorNode.cursorBall =  new THREE.Mesh(sGeom,sMat)
     scene.add(cursorNode.cursorBall)
@@ -216,6 +204,14 @@ cursorNode.drawModeOnFrame = function(e){
     
 }
 
+cursorNode.drawModeOnKeyDown = function(e){
+    if (e.keyCode ==27){
+        scene.remove(cursorNode.cursorBall)
+        scene.remove(cursorNode.cylinder)
+        cursorNode.createMode()
+    }
+}
+
 cursorNode.drawMode = function(){
     cursorNode.cylinder = new THREE.Mesh(cGeom,cMat)
     cursorNode.cylinder.position.copy(cursorNode.cursorBall.position)
@@ -225,43 +221,9 @@ cursorNode.drawMode = function(){
     
     cursorNode.onClick = cursorNode.drawModeOnClick
     cursorNode.onFrame = cursorNode.drawModeOnFrame
+    cursorNode.onKeyDown = cursorNode.drawModeOnKeyDown
 }
 
-cursorNode.followOnScreen = function(x,y){
-    var canvasX = 2*((x - renderer.domElement.offsetLeft)/canvasSize[0]) - 1;
-    var canvasY = 1 - 2*((y - renderer.domElement.offsetTop)/canvasSize[1]);
-
-    var mouseVector = new THREE.Vector3(canvasX,canvasY,0)
-
-    var projector = new THREE.Projector();
-    var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
-	
-	var x0 = new THREE.Vector3(-500,0,0)
-	var x1 = new THREE.Vector3(500,0,0)
-	var xPt = new THREE.Vector3()
-	var xd = raycaster.ray.distanceSqToSegment(x0,x1,null,xPt)
-	
-	var y0 = new THREE.Vector3(0,-500,0)
-	var y1 = new THREE.Vector3(0,500,0)
-	var yPt = new THREE.Vector3()
-	var yd = raycaster.ray.distanceSqToSegment(y0,y1,null,yPt)
-	
-	var z0 = new THREE.Vector3(0,0,-500)
-	var z1 = new THREE.Vector3(0,0,500)
-	var zPt = new THREE.Vector3()
-	var zd = raycaster.ray.distanceSqToSegment(z0,z1,null,zPt)
-	
-	var pt = (xd < yd) ? ((xd < zd)? xPt : zPt) : ((yd < zd) ? yPt : zPt)
-
-    cursorNode.mesh.position.copy(pt)
-
-    cursorNode.cylinder.scale.set(1,1,pt.length())
-    cursorNode.cylinder.lookAt(pt)
-    
-    updateCoords(pt)
-    
-
-}
 
 
 onResize()
@@ -269,6 +231,8 @@ onResize()
 cursorNode.createMode()
 
 document.addEventListener("click",cursorNode.callClick,false)
+
+document.addEventListener("keydown",cursorNode.callKeyDown,false)
 
 renderer.render(scene,orthoCamera);
 
