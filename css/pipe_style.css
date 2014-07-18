@@ -22,6 +22,15 @@ div#position-box input{
     border:none;
 }
 
+div#delta-box{
+    display:none;
+}
+
+div#delta-box input{
+    width:45px;
+    border:none;
+}
+
 span.activator{
     display:inline-block;
     min-width:15px;

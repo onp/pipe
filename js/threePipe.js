@@ -17,6 +17,12 @@ function updateCoords(vec){
     document.getElementById("y-pos").value = vec.y.toFixed(3)
 }
 
+function updateDelta(vec){
+    document.getElementById("z-delta").value = vec.z.toFixed(3)
+    document.getElementById("x-delta").value = vec.x.toFixed(3)
+    document.getElementById("y-delta").value = vec.y.toFixed(3)
+}
+
 
 var mouseState = {x:0,y:0,right:false,left:false}
 
@@ -38,6 +44,8 @@ var orthoCamera = new THREE.OrthographicCamera(1,1,1,1,0.1,1000);
 
 var renderer = new THREE.WebGLRenderer();
 renderer.setClearColor(0xffffff,1);
+
+var deltaBox = document.getElementById("delta-box")
 
 function onResize(){
     canvasSize = [window.innerWidth-3,window.innerHeight-3]
@@ -101,7 +109,6 @@ function render(){
 
 document.addEventListener("wheel",function(e){
     if ((e.wheelDeltaY>0) || (e.deltaY<0)){
-        console.log(e.wheelDeltaY,e.deltaY)
         orthoWidth *= 1.25;
     }else{
         orthoWidth *= 0.8;
@@ -156,6 +163,8 @@ cursorNode.createMode = function(){
     cursorNode.onFrame = cursorNode.createModeOnFrame
     cursorNode.onKeyDown = cursorNode.createModeOnKeyDown
     
+    deltaBox.style.display = "none"
+    
     cursorNode.cursorBall =  new THREE.Mesh(sGeom,sMat)
     scene.add(cursorNode.cursorBall)
 }
@@ -201,6 +210,7 @@ cursorNode.drawModeOnFrame = function(e){
     cursorNode.cylinder.lookAt(pt)
     
     updateCoords(pt)
+    updateDelta(pt.clone().sub(cursorNode.basisPoint))
     
 }
 
@@ -218,6 +228,8 @@ cursorNode.drawMode = function(){
     scene.add(cursorNode.cylinder)
     
     cursorNode.basisPoint = cursorNode.cursorBall.position.clone()
+    
+    deltaBox.style.display = "block"
     
     cursorNode.onClick = cursorNode.drawModeOnClick
     cursorNode.onFrame = cursorNode.drawModeOnFrame
