@@ -10,3 +10,39 @@ body{
     left:0px;
     right:0px;
 }
+
+div#menu-box{
+    position:absolute;
+    right:20px;
+    top:20px;
+}
+
+div#position-box input{
+    width:45px;
+    border:none;
+}
+
+div#delta-box{
+    display:none;
+}
+
+div#delta-box input{
+    width:45px;
+    border:none;
+}
+
+span.activator{
+    display:inline-block;
+    min-width:15px;
+    height:15px;
+    border: 1px solid lightGrey;
+    border-radius:8px;
+}
+
+span.activator:hover{
+    background:lightBlue;
+}
+
+span.activator.active{
+    background:lightGrey;
+}
