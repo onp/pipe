@@ -42,7 +42,14 @@ var orthoWidth = 20;
 
 var orthoCamera = new THREE.OrthographicCamera(1,1,1,1,0.1,1000);
 
-var renderer = new THREE.WebGLRenderer();
+var renderer
+
+if (window.WebGLRenderingContext){
+	renderer = new THREE.WebGLRenderer();
+}else{
+	renderer = new THREE.CanvasRenderer();
+}
+
 renderer.setClearColor(0xffffff,1);
 
 var deltaBox = document.getElementById("delta-box")
