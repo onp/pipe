@@ -73,6 +73,12 @@ window.addEventListener('resize', onResize, false);
 
 var scene = new THREE.Scene();
 
+var pipes = new THREE.Object3D();
+scene.add( pipes );
+
+var nodes = new THREE.Object3D();
+scene.add( nodes );
+
 document.body.appendChild(renderer.domElement);
 
 
@@ -141,7 +147,7 @@ cursorNode.callKeyDown = function(e){
 cursorNode.createModeOnClick = function(e){
    var newNode = new THREE.Mesh(sGeom,sMat)
    newNode.position.copy(cursorNode.cursorBall.position)
-   scene.add(newNode)
+   nodes.add(newNode)
    
    cursorNode.drawMode()
 }
@@ -155,6 +161,18 @@ cursorNode.createModeOnFrame = function(e){
     var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
     
     var iPoint = raycaster.ray.intersectPlane(iPlane)
+    
+    var intersects = raycaster.intersectObjects(pipes.children);
+    
+    pipes.children.forEach(
+        function ( pipe ) {
+            pipe.material.color.setHex(0x00ff00);
+        }
+    )
+    
+    if (intersects.length > 0){
+        intersects[0].object.material.color.setHex(0x0000ff);
+    }
     
     cursorNode.cursorBall.position.copy(iPoint)
     
@@ -180,7 +198,7 @@ cursorNode.createMode = function(){
 cursorNode.drawModeOnClick = function(e){
     var newNode = new THREE.Mesh(sGeom,sMat)
     newNode.position.copy(cursorNode.cursorBall.position)
-    scene.add(newNode)
+    nodes.add(newNode)
     
     cursorNode.drawMode()
 }
@@ -224,15 +242,15 @@ cursorNode.drawModeOnFrame = function(e){
 cursorNode.drawModeOnKeyDown = function(e){
     if (e.keyCode ==27){
         scene.remove(cursorNode.cursorBall)
-        scene.remove(cursorNode.cylinder)
+        pipes.remove(cursorNode.cylinder)
         cursorNode.createMode()
     }
 }
 
 cursorNode.drawMode = function(){
-    cursorNode.cylinder = new THREE.Mesh(cGeom,cMat)
+    cursorNode.cylinder = new THREE.Mesh(cGeom,cMat.clone())
     cursorNode.cylinder.position.copy(cursorNode.cursorBall.position)
-    scene.add(cursorNode.cylinder)
+    pipes.add(cursorNode.cylinder)
     
     cursorNode.basisPoint = cursorNode.cursorBall.position.clone()
     
