@@ -26,6 +26,8 @@ function updateDelta(vec){
 
 var mouseState = {x:0,y:0,right:false,left:false}
 
+var mode
+
 document.addEventListener('mousemove',function(e){
     var cp = getCursorPosition(e)
     mouseState.x = cp[0];
@@ -109,9 +111,10 @@ orthoCamera.lookAt(new THREE.Vector3(0,0,0));
 var controls = new THREE.OrbitControls(orthoCamera, renderer.domElement);
 
 function render(){
+
     requestAnimationFrame(render);
     
-    cursorNode.callFrame(mouseState)
+    mode.onFrame(mouseState)
     
     renderer.render(scene,orthoCamera);
 
@@ -130,146 +133,161 @@ document.addEventListener("wheel",function(e){
 
 },false)
 
-var cursorNode = {}
+var cursorNode = {};
 
-cursorNode.callClick = function(e){
-    cursorNode.onClick(e)
-}
 
-cursorNode.callFrame = function(e){
-    cursorNode.onFrame(e)
-}
 
-cursorNode.callKeyDown = function(e){
-    cursorNode.onKeyDown(e)
-}
+// Define "Create Mode" behaviour.
+(function (createMode,undefined) {
+    createMode.enter = function(){
+        mode = createMode
+        
+        deltaBox.style.display = "none"
+        cursorNode.cursorBall =  new THREE.Mesh(sGeom,sMat)
+        scene.add(cursorNode.cursorBall)
+    };
+    
+    createMode.leave = function () {
+        mode = undefined
+        scene.remove(cursorBall.Node)
+    }
+    
+    createMode.onClick = function (e) {
+        var newNode = new THREE.Mesh(sGeom,sMat)
+        newNode.position.copy(cursorNode.cursorBall.position)
+        nodes.add(newNode)
+       
+        drawMode.enter()
+    }
 
-cursorNode.createModeOnClick = function(e){
-   var newNode = new THREE.Mesh(sGeom,sMat)
-   newNode.position.copy(cursorNode.cursorBall.position)
-   nodes.add(newNode)
-   
-   cursorNode.drawMode()
-}
+    createMode.onFrame = function (e) {
+        
+        var mouseVector = new THREE.Vector3(mouseState.ndcX,mouseState.ndcY,0)
+        var projector = new THREE.Projector();
+        var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
+        
+        var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
+        
+        var iPoint = raycaster.ray.intersectPlane(iPlane)
+        
+        var intersects = raycaster.intersectObjects(pipes.children);
+        
+        pipes.children.forEach(
+            function ( pipe ) {
+                pipe.material.color.setHex(0x00ff00);
+            }
+        )
+        
+        if (intersects.length > 0){
+            intersects[0].object.material.color.setHex(0x0000ff);
+        };
+        
+        cursorNode.cursorBall.position.copy(iPoint)
+        
+        updateCoords(iPoint)
+    };
 
-cursorNode.createModeOnFrame = function(e){
+    createMode.onKeyDown = function (e) {
+        return
+    };
+}(window.createMode = {} ));
+
+// Define "draw mode" behaviour.
+(function(drawMode,undefined){
+
+    drawMode.enter = function(){
+        mode = drawMode
+        
+        cursorNode.cylinder = new THREE.Mesh(cGeom,cMat.clone())
+        cursorNode.cylinder.position.copy(cursorNode.cursorBall.position)
+        pipes.add(cursorNode.cylinder)
+        
+        cursorNode.basisPoint = cursorNode.cursorBall.position.clone()
+        
+        deltaBox.style.display = "block"
+    }
+
+    drawMode.onClick = function (e) {
+        var newNode = new THREE.Mesh(sGeom, sMat)
+        newNode.position.copy(cursorNode.cursorBall.position)
+        nodes.add(newNode)
+        
+        drawMode.enter()
+    }
     
-    var mouseVector = new THREE.Vector3(mouseState.ndcX,mouseState.ndcY,0)
-    var projector = new THREE.Projector();
-    var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
+    drawMode.onFrame = function (e) {
+        
+        var mouseVector = new THREE.Vector3(mouseState.ndcX,mouseState.ndcY,0)
+        var projector = new THREE.Projector();
+        var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
+        
+        var x0 = new THREE.Vector3(-500,0,0).add(cursorNode.basisPoint)
+        var x1 = new THREE.Vector3(500,0,0).add(cursorNode.basisPoint)
+        var xPt = new THREE.Vector3()
+        var xd = raycaster.ray.distanceSqToSegment(x0,x1,null,xPt)
+        
+        var y0 = new THREE.Vector3(0,-500,0).add(cursorNode.basisPoint)
+        var y1 = new THREE.Vector3(0,500,0).add(cursorNode.basisPoint)
+        var yPt = new THREE.Vector3()
+        var yd = raycaster.ray.distanceSqToSegment(y0,y1,null,yPt)
+        
+        var z0 = new THREE.Vector3(0,0,-500).add(cursorNode.basisPoint)
+        var z1 = new THREE.Vector3(0,0,500).add(cursorNode.basisPoint)
+        var zPt = new THREE.Vector3()
+        var zd = raycaster.ray.distanceSqToSegment(z0,z1,null,zPt)
+        
+        var pt = (xd < yd) ? ((xd < zd)? xPt : zPt) : ((yd < zd) ? yPt : zPt)
+        
+
+        cursorNode.cursorBall.position.copy(pt)
+
+        cursorNode.cylinder.scale.set(1,1,pt.clone().sub(cursorNode.basisPoint).length())
+        cursorNode.cylinder.lookAt(pt)
+        
+        updateCoords(pt)
+        updateDelta(pt.clone().sub(cursorNode.basisPoint))
+    }
     
-    var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
-    
-    var iPoint = raycaster.ray.intersectPlane(iPlane)
-    
-    var intersects = raycaster.intersectObjects(pipes.children);
-    
-    pipes.children.forEach(
-        function ( pipe ) {
-            pipe.material.color.setHex(0x00ff00);
+    drawMode.onKeyDown = function(e){
+        if (e.keyCode ==27){
+            scene.remove(cursorNode.cursorBall)
+            pipes.remove(cursorNode.cylinder)
+            
+            createMode.enter()
+            
         }
-    )
-    
-    if (intersects.length > 0){
-        intersects[0].object.material.color.setHex(0x0000ff);
     }
     
-    cursorNode.cursorBall.position.copy(iPoint)
     
-    updateCoords(iPoint)
-}
-
-cursorNode.createModeOnKeyDown = function(e){
-    return
-}
-
-cursorNode.createMode = function(){
-    cursorNode.onClick = cursorNode.createModeOnClick
-    cursorNode.onFrame = cursorNode.createModeOnFrame
-    cursorNode.onKeyDown = cursorNode.createModeOnKeyDown
-    
-    deltaBox.style.display = "none"
-    
-    cursorNode.cursorBall =  new THREE.Mesh(sGeom,sMat)
-    scene.add(cursorNode.cursorBall)
-}
+}(window.drawMode = {}));
 
 
-cursorNode.drawModeOnClick = function(e){
-    var newNode = new THREE.Mesh(sGeom,sMat)
-    newNode.position.copy(cursorNode.cursorBall.position)
-    nodes.add(newNode)
-    
-    cursorNode.drawMode()
-}
-
-
-
-cursorNode.drawModeOnFrame = function(e){
-    
-    var mouseVector = new THREE.Vector3(mouseState.ndcX,mouseState.ndcY,0)
-    var projector = new THREE.Projector();
-    var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
-    
-    var x0 = new THREE.Vector3(-500,0,0).add(cursorNode.basisPoint)
-	var x1 = new THREE.Vector3(500,0,0).add(cursorNode.basisPoint)
-	var xPt = new THREE.Vector3()
-	var xd = raycaster.ray.distanceSqToSegment(x0,x1,null,xPt)
-	
-	var y0 = new THREE.Vector3(0,-500,0).add(cursorNode.basisPoint)
-	var y1 = new THREE.Vector3(0,500,0).add(cursorNode.basisPoint)
-	var yPt = new THREE.Vector3()
-	var yd = raycaster.ray.distanceSqToSegment(y0,y1,null,yPt)
-	
-	var z0 = new THREE.Vector3(0,0,-500).add(cursorNode.basisPoint)
-	var z1 = new THREE.Vector3(0,0,500).add(cursorNode.basisPoint)
-	var zPt = new THREE.Vector3()
-	var zd = raycaster.ray.distanceSqToSegment(z0,z1,null,zPt)
-	
-	var pt = (xd < yd) ? ((xd < zd)? xPt : zPt) : ((yd < zd) ? yPt : zPt)
-    
-
-    cursorNode.cursorBall.position.copy(pt)
-
-    cursorNode.cylinder.scale.set(1,1,pt.clone().sub(cursorNode.basisPoint).length())
-    cursorNode.cylinder.lookAt(pt)
-    
-    updateCoords(pt)
-    updateDelta(pt.clone().sub(cursorNode.basisPoint))
-    
-}
-
-cursorNode.drawModeOnKeyDown = function(e){
-    if (e.keyCode ==27){
-        scene.remove(cursorNode.cursorBall)
-        pipes.remove(cursorNode.cylinder)
-        cursorNode.createMode()
-    }
-}
-
-cursorNode.drawMode = function(){
-    cursorNode.cylinder = new THREE.Mesh(cGeom,cMat.clone())
-    cursorNode.cylinder.position.copy(cursorNode.cursorBall.position)
-    pipes.add(cursorNode.cylinder)
-    
-    cursorNode.basisPoint = cursorNode.cursorBall.position.clone()
-    
-    deltaBox.style.display = "block"
-    
-    cursorNode.onClick = cursorNode.drawModeOnClick
-    cursorNode.onFrame = cursorNode.drawModeOnFrame
-    cursorNode.onKeyDown = cursorNode.drawModeOnKeyDown
-}
 
 
 
 onResize()
 
-cursorNode.createMode()
 
-document.addEventListener("click",cursorNode.callClick,false)
 
-document.addEventListener("keydown",cursorNode.callKeyDown,false)
+createMode.enter()
+
+var clickHandle = function(e){
+    if (!e.ctrlKey){
+        mode.onClick(e);
+    }
+}
+
+var keyDownHandle = function(e){
+    if (e.keyCode==17){
+        aaaaaa=5
+    }
+    mode.onKeyDown(e)
+}
+
+
+document.addEventListener("click",clickHandle,false)
+
+document.addEventListener("keydown",keyDownHandle,false)
 
 renderer.render(scene,orthoCamera);
 
