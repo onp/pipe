@@ -26,7 +26,7 @@ function updateDelta(vec){
 
 var mouseState = {x:0,y:0,right:false,left:false}
 
-var mode
+var mode,previousMode
 
 document.addEventListener('mousemove',function(e){
     var cp = getCursorPosition(e)
@@ -109,6 +109,7 @@ orthoCamera.up = new THREE.Vector3(0,0,1);
 orthoCamera.lookAt(new THREE.Vector3(0,0,0));
 
 var controls = new THREE.OrbitControls(orthoCamera, renderer.domElement);
+controls.enabled = false;
 
 function render(){
 
@@ -149,7 +150,15 @@ var cursorNode = {};
     
     createMode.leave = function () {
         mode = undefined
-        scene.remove(cursorBall.Node)
+        scene.remove(cursorNode.cursorBall)
+    }
+    
+    createMode.suspend = function () {
+        scene.remove(cursorNode.cursorBall)
+    }
+    
+    createMode.resume = function () {
+        scene.add(cursorNode.cursorBall)
     }
     
     createMode.onClick = function (e) {
@@ -193,7 +202,9 @@ var cursorNode = {};
 }(window.createMode = {} ));
 
 // Define "draw mode" behaviour.
-(function(drawMode,undefined){
+(function (drawMode, undefined) {
+
+    var basisPoint
 
     drawMode.enter = function(){
         mode = drawMode
@@ -202,9 +213,19 @@ var cursorNode = {};
         cursorNode.cylinder.position.copy(cursorNode.cursorBall.position)
         pipes.add(cursorNode.cylinder)
         
-        cursorNode.basisPoint = cursorNode.cursorBall.position.clone()
+        basisPoint = cursorNode.cursorBall.position.clone()
         
         deltaBox.style.display = "block"
+    }
+    
+    drawMode.suspend = function (){
+         pipes.remove(cursorNode.cylinder)
+         scene.remove(cursorNode.cursorBall)
+    }
+    
+    drawMode.resume = function () {
+         pipes.add(cursorNode.cylinder)
+         scene.add(cursorNode.cursorBall)
     }
 
     drawMode.onClick = function (e) {
@@ -221,18 +242,18 @@ var cursorNode = {};
         var projector = new THREE.Projector();
         var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
         
-        var x0 = new THREE.Vector3(-500,0,0).add(cursorNode.basisPoint)
-        var x1 = new THREE.Vector3(500,0,0).add(cursorNode.basisPoint)
+        var x0 = new THREE.Vector3(-500,0,0).add(basisPoint)
+        var x1 = new THREE.Vector3(500,0,0).add(basisPoint)
         var xPt = new THREE.Vector3()
         var xd = raycaster.ray.distanceSqToSegment(x0,x1,null,xPt)
         
-        var y0 = new THREE.Vector3(0,-500,0).add(cursorNode.basisPoint)
-        var y1 = new THREE.Vector3(0,500,0).add(cursorNode.basisPoint)
+        var y0 = new THREE.Vector3(0,-500,0).add(basisPoint)
+        var y1 = new THREE.Vector3(0,500,0).add(basisPoint)
         var yPt = new THREE.Vector3()
         var yd = raycaster.ray.distanceSqToSegment(y0,y1,null,yPt)
         
-        var z0 = new THREE.Vector3(0,0,-500).add(cursorNode.basisPoint)
-        var z1 = new THREE.Vector3(0,0,500).add(cursorNode.basisPoint)
+        var z0 = new THREE.Vector3(0,0,-500).add(basisPoint)
+        var z1 = new THREE.Vector3(0,0,500).add(basisPoint)
         var zPt = new THREE.Vector3()
         var zd = raycaster.ray.distanceSqToSegment(z0,z1,null,zPt)
         
@@ -241,11 +262,11 @@ var cursorNode = {};
 
         cursorNode.cursorBall.position.copy(pt)
 
-        cursorNode.cylinder.scale.set(1,1,pt.clone().sub(cursorNode.basisPoint).length())
+        cursorNode.cylinder.scale.set(1,1,pt.clone().sub(basisPoint).length())
         cursorNode.cylinder.lookAt(pt)
         
         updateCoords(pt)
-        updateDelta(pt.clone().sub(cursorNode.basisPoint))
+        updateDelta(pt.clone().sub(basisPoint))
     }
     
     drawMode.onKeyDown = function(e){
@@ -262,6 +283,24 @@ var cursorNode = {};
 }(window.drawMode = {}));
 
 
+//define view mode behaviour
+(function (viewMode,undefined) {
+    viewMode.enter = function(){
+        controls.enabled = true;
+    };
+    
+    viewMode.leave = function(){
+        controls.enabled = false;
+    };
+    
+    viewMode.onClick = function(){}
+    
+    viewMode.onKeydown = function(){}
+    
+    viewMode.onFrame = function(){}
+
+
+}(window.viewMode = {}));
 
 
 
@@ -279,15 +318,29 @@ var clickHandle = function(e){
 
 var keyDownHandle = function(e){
     if (e.keyCode==17){
-        aaaaaa=5
+        previousMode = mode
+        mode.suspend()
+        viewMode.enter()
+        return
     }
     mode.onKeyDown(e)
+}
+
+var keyUpHandle = function(e){
+    if (e.keyCode==17){
+        viewMode.leave()
+        previousMode.resume()
+        previousMode = undefined;
+        return
+    }
 }
 
 
 document.addEventListener("click",clickHandle,false)
 
 document.addEventListener("keydown",keyDownHandle,false)
+
+document.addEventListener("keyup",keyUpHandle,false)
 
 renderer.render(scene,orthoCamera);
 

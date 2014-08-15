@@ -284,8 +284,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false ) { return; }
         
-        if ( !event.ctrlKey ) { return; }
-        
 		event.preventDefault();
 
 		if ( event.button === 0 ) {
@@ -381,8 +379,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 	function onMouseUp( /* event */ ) {
 
 		if ( scope.enabled === false ) return;
-        
-        if ( !event.ctrlKey ) { return; }
 
 		// Greggman fix: https://github.com/greggman/three.js/commit/fde9f9917d6d8381f06bf22cdff766029d1761be
 		scope.domElement.removeEventListener( 'mousemove', onMouseMove, false );
@@ -395,8 +391,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 	function onMouseWheel( event ) {
 
 		if ( scope.enabled === false || scope.noZoom === true ) return;
-        
-        if ( !event.ctrlKey ) { return; }
 
 		var delta = 0;
 
@@ -423,6 +417,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	}
 
 	function onKeyDown( event ) {
+        console.log('caught keydown')
 
 		if ( scope.enabled === false ) { return; }
 		if ( scope.noKeys === true ) { return; }
@@ -435,19 +430,19 @@ THREE.OrbitControls = function ( object, domElement ) {
 		switch ( event.keyCode ) {
 
 			case scope.keys.UP:
-				scope.pan( new THREE.Vector2( 0, scope.keyPanSpeed ) );
-				needUpdate = true;
-				break;
-			case scope.keys.BOTTOM:
 				scope.pan( new THREE.Vector2( 0, -scope.keyPanSpeed ) );
 				needUpdate = true;
 				break;
+			case scope.keys.BOTTOM:
+				scope.pan( new THREE.Vector2( 0, scope.keyPanSpeed ) );
+				needUpdate = true;
+				break;
 			case scope.keys.LEFT:
-				scope.pan( new THREE.Vector2( scope.keyPanSpeed, 0 ) );
+				scope.pan( new THREE.Vector2( -scope.keyPanSpeed, 0 ) );
 				needUpdate = true;
 				break;
 			case scope.keys.RIGHT:
-				scope.pan( new THREE.Vector2( -scope.keyPanSpeed, 0 ) );
+				scope.pan( new THREE.Vector2( scope.keyPanSpeed, 0 ) );
 				needUpdate = true;
 				break;
 		}
@@ -581,7 +576,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 	this.domElement.addEventListener( 'mousewheel', onMouseWheel, false );
 	this.domElement.addEventListener( 'DOMMouseScroll', onMouseWheel, false ); // firefox
 
-	this.domElement.addEventListener( 'keydown', onKeyDown, false );
+	document.addEventListener( 'keydown', onKeyDown, false );
 
 	this.domElement.addEventListener( 'touchstart', touchstart, false );
 	this.domElement.addEventListener( 'touchend', touchend, false );
