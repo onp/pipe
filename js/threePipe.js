@@ -162,8 +162,9 @@ var cursorNode = {};
     }
     
     createMode.onClick = function (e) {
-        var newNode = new THREE.Mesh(sGeom,sMat)
-        newNode.position.copy(cursorNode.cursorBall.position)
+        //var newNode = new THREE.Mesh(sGeom,sMat)
+        var newNode = new Pipe.Node(cursorNode.cursorBall.position)
+        newNode.position.copy()
         nodes.add(newNode)
        
         drawMode.enter()
