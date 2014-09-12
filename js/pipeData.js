@@ -36,6 +36,8 @@ PIPER.Segment.prototype = {
         if ( this.mesh === undefined ) {
             this.mesh = new THREE.Mesh(segmentGeometry, segmentMaterial.clone())
             this.mesh.position.copy(this.node1.position)
+            this.mesh.scale.set(1,1,this.node2.position.clone().sub(this.node1.position).length())
+            this.mesh.lookAt(this.node2.position)
             this.mesh.userData.owner = this
         }
         

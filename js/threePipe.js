@@ -216,12 +216,12 @@ var cursorSegment;
     }
     
     drawMode.suspend = function (){
-         scene.remove(cursorNode.cylinder)
+         scene.remove(cursorSegment.mesh)
          scene.remove(cursorNode.mesh)
     }
     
     drawMode.resume = function () {
-         scene.add(cursorNode.cylinder)
+         scene.add(cursorSegment.mesh)
          scene.add(cursorNode.mesh)
     }
 
@@ -233,11 +233,12 @@ var cursorSegment;
         
         visibleNodes.add(newNode.makeMesh())
 
-        scene.remove(cursorNode.cylinder)
-        visiblePipes.add(cursorNode.cylinder)
+        scene.remove(cursorSegment.mesh)
         
         newPipe = new PIPER.Segment(sourceNode,newNode)
         PIPER.pipes.push(newPipe)
+        
+        visiblePipes.add(newPipe.makeMesh())
         
         drawMode.enter(newNode)
     }
@@ -278,7 +279,7 @@ var cursorSegment;
     drawMode.onKeyDown = function(e){
         if (e.keyCode ==27){
             scene.remove(cursorNode.mesh)
-            scene.remove(cursorNode.cylinder)
+            scene.remove(cursorSegment.mesh)
             
             createMode.enter()
             
