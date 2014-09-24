@@ -133,6 +133,13 @@ var cursorSegment;
 
 
 
+// 
+
+
+
+
+
+
 // Define "Create Mode" behaviour.
 (function (createMode,undefined) {
     createMode.enter = function(){
@@ -158,13 +165,21 @@ var cursorSegment;
     
     createMode.onClick = function (e) {
     
-        var newNode = new PIPER.Node(cursorNode.mesh.position.clone())
-
-        PIPER.nodes[newNode.uuid] = newNode
+        if (createMode.underMouse !== null){
         
-        visibleNodes.add(newNode.makeMesh())
-       
-        drawMode.enter(newNode)
+            console.log(createMode.underMouse);
+            
+        } else {
+    
+            var newNode = new PIPER.Node(cursorNode.mesh.position.clone());
+
+            PIPER.nodes[newNode.uuid] = newNode;
+            
+            visibleNodes.add(newNode.makeMesh());
+           
+            drawMode.enter(newNode);
+            
+        }
     }
 
     createMode.onFrame = function (e) {
@@ -187,6 +202,9 @@ var cursorSegment;
         
         if (intersects.length > 0){
             intersects[0].object.material.color.setHex(0x0000ff);
+            createMode.underMouse = intersects[0].object.userData.owner
+        } else {
+            createMode.underMouse = null;
         };
         
         cursorNode.mesh.position.copy(iPoint)
