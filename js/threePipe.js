@@ -13,17 +13,132 @@ function getCursorPosition(e) {
     return [x,y]
 }
 
+function parseLength (l) {
+    if (Number(l) !== NaN) {
+        return Number(l)
+    }
+}
+
+var xposElem = document.getElementById("x-pos");
+var xboxElem = document.getElementById("x-box");
+var yposElem = document.getElementById("y-pos");
+var yboxElem = document.getElementById("y-box");
+var zposElem = document.getElementById("z-pos");
+var zboxElem = document.getElementById("z-box");
+var xdElem = document.getElementById("x-delta");
+var xdboxElem = document.getElementById("xd-box");
+var ydElem = document.getElementById("y-delta");
+var ydboxElem = document.getElementById("yd-box");
+var zdElem = document.getElementById("z-delta");
+var zdboxElem = document.getElementById("zd-box");
+var ldElem = document.getElementById("l-delta");
+var ldboxElem = document.getElementById("ld-box");
+
+xposElem.addEventListener("input", 
+    function(e){
+        positionSpecs.x = parseLength(xposElem.value)
+        xboxElem.classList.add("active")
+    },
+    false
+);
+
+yposElem.addEventListener("input", 
+    function(e){
+        positionSpecs.y = parseLength(yposElem.value)
+        yboxElem.classList.add("active")
+    },
+    false
+);
+
+zposElem.addEventListener("input", 
+    function(e){
+        console.log(zposElem.value)
+        positionSpecs.z = parseLength(zposElem.value)
+        zboxElem.classList.add("active")
+        console.log(positionSpecs)
+    },
+    false
+);
+
+xdElem.addEventListener("input", 
+    function(e){
+        positionSpecs.xd = parseLength(xdElem.value)
+        xdboxElem.classList.add("active")
+    },
+    false
+);
+
+ydElem.addEventListener("input", 
+    function(e){
+        positionSpecs.yd = parseLength(ydElem.value)
+        ydboxElem.classList.add("active")
+    },
+    false
+);
+
+zdElem.addEventListener("input", 
+    function(e){
+        positionSpecs.zd = parseLength(zdElem.value)
+        zdElem.classList.add("active")
+    },
+    false
+);
+
+ldElem.addEventListener("input", 
+    function(e){
+        positionSpecs.ld = parseLength(ldElem.value)
+        xboxElem.classList.add("active")
+    },
+    false
+);
+
+
 function updateCoords(vec){
-    document.getElementById("z-pos").value = vec.z.toFixed(3)
-    document.getElementById("x-pos").value = vec.x.toFixed(3)
-    document.getElementById("y-pos").value = vec.y.toFixed(3)
+    
+    if (positionSpecs.x === undefined){
+        xposElem.value = vec.x.toFixed(3)
+    }else{
+        xboxElem.classList.add("active")
+    };
+    
+    if (positionSpecs.y === undefined){
+        yposElem.value = vec.y.toFixed(3)
+    }else{
+        document.getElementById("y-box").classList.add("active")
+    };
+    
+    if (positionSpecs.z === undefined){
+        zposElem.value = vec.z.toFixed(3)
+    }else{
+        document.getElementById("z-box").classList.add("active")
+    };
 }
 
 function updateDelta(vec){
-    document.getElementById("z-delta").value = vec.z.toFixed(3)
-    document.getElementById("x-delta").value = vec.x.toFixed(3)
-    document.getElementById("y-delta").value = vec.y.toFixed(3)
-    document.getElementById("l-delta").value = vec.length().toFixed(3)
+    
+    if (positionSpecs.zd === undefined){
+        zdElem.value = vec.z.toFixed(3)
+    }else{
+        document.getElementById("zd-box").classList.add("active")
+    };
+    
+    if (positionSpecs.xd === undefined){
+        xdElem.value = vec.x.toFixed(3)
+    }else{
+        document.getElementById("xd-box").classList.add("active")
+    };
+    
+    if (positionSpecs.yd === undefined){
+        ydElem.value = vec.y.toFixed(3)
+    }else{
+        document.getElementById("yd-box").classList.add("active")
+    };
+    
+    if (positionSpecs.ld === undefined){
+        ldElem.value = vec.length().toFixed(3)
+    }else{
+        document.getElementById("ld-box").classList.add("active")
+    };
 }
 
 var positionSpecs = {
@@ -33,8 +148,27 @@ var positionSpecs = {
     xd : undefined,
     yd : undefined,
     zd : undefined,
-    l  : undefined
+    ld  : undefined
 };
+
+function clearSpecs(z) {
+    positionSpecs.x  = undefined;
+    positionSpecs.y  = undefined;
+    positionSpecs.z  = undefined;
+    positionSpecs.xd = undefined;
+    positionSpecs.yd = undefined;
+    positionSpecs.zd = undefined;
+    positionSpecs.ld = undefined;
+    
+    xboxElem.classList.remove("active")
+    yboxElem.classList.remove("active")
+    zboxElem.classList.remove("active")
+    xdboxElem.classList.remove("active")
+    ydboxElem.classList.remove("active")
+    zdboxElem.classList.remove("active")
+    ldboxElem.classList.remove("active")
+};
+        
 
 
     
@@ -147,35 +281,35 @@ var cursorSegment;
 
 
 
-function blarrg (n0,castRay,dx,dy,dz,l ) {
+function blarrg (n0,castRay,dx,dy,dz,ld ) {
 // n0: origin node [Vector3]
 // castRay: mouse ray [RayCaster]
 // dx: locks the returned point to x = n0.x + dx
 // dy: locks the returned point to y = n0.y + dy
 // dz: locks the returned point to z = n0.z + dz
-// l:  forces the returned point to be distance l from n0
+// ld:  forces the returned point to be distance ld from n0
 
 	var a,b,norm;
 
-	if ( l !== undefined ){
+	if ( ld !== undefined ){
 
-		var closestPoint = n0.clone().add( new THREE.Vector3( l, 0, 0 ) )
+		var closestPoint = n0.clone().add( new THREE.Vector3( ld, 0, 0 ) )
 
-		var minDist = castRay.distanceToPoint(closestPoint)
+		var minDist = castRay.ray.distanceToPoint(closestPoint)
 
-		var axisVectors = [	new THREE.Vector3( -l, 0, 0 ),
-					new THREE.Vector3( 0,  l, 0 ),
-					new THREE.Vector3( 0, -l, 0 ),
-					new THREE.Vector3( 0, 0,  l ),
-					new THREE.Vector3( 0, 0, -l )
+		var axisVectors = [	new THREE.Vector3( -ld, 0, 0 ),
+					new THREE.Vector3( 0,  ld, 0 ),
+					new THREE.Vector3( 0, -ld, 0 ),
+					new THREE.Vector3( 0, 0,  ld ),
+					new THREE.Vector3( 0, 0, -ld )
 				  ];
 		var point2, dist2
 
 		for ( var i = 0; i < axisVectors.length; i++ ) {
 
-			point2 = n0.clone().add( axisVector[i] )
+			point2 = n0.clone().add( axisVectors[i] )
 
-			dist2 = castRay.distanceToPoint( point2 )
+			dist2 = castRay.ray.distanceToPoint( point2 )
 
 			if ( dist2 < minDist) {
 
@@ -264,7 +398,7 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
 
 		var targetPlane = new THREE.Plane()
 
-		targetPlane.setFromNormalAndCoplanarPoint(norm,n0)
+		targetPlane.setFromNormalAndCoplanarPoint(norm,n0.add(a))
         
         var pt = castRay.ray.intersectPlane(targetPlane)
         
@@ -273,14 +407,19 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
 	} else {
 
 		//fix to line on n0, perpendicular to a and b
+        
+        n0.add(a).add(b)
 
 		var c = new THREE.Vector3();
 
-		c.crossVectors(a,b).normalize().multiplyscalar(500);
+		c.crossVectors(a,b).normalize().multiplyScalar(500);
 
 		var closePoint = new THREE.Vector3();
+        
+        n0.clone().sub(c)
+        n0.clone().add(c)
 
-		castRay.distanceSqToSegment(n0.clone.sub(c),n0.clone.add(c),undefined,closePoint1);
+		castRay.ray.distanceSqToSegment(n0.clone().sub(c),n0.clone().add(c),undefined,closePoint);
 
 		return closePoint;
 
@@ -297,6 +436,9 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
 (function (createMode,undefined) {
     createMode.enter = function(){
         mode = createMode
+        
+        clearSpecs()
+        positionSpecs.z = 0
         
         deltaBox.style.display = "none"
         cursorNode =  new PIPER.Node(new THREE.Vector3())
@@ -345,10 +487,6 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
         
         var iPoint = blarrg(blah,raycaster,positionSpecs.x,positionSpecs.y,positionSpecs.z)
         
-        //var iPlane = new THREE.Plane(new THREE.Vector3(0,0,1),0)
-        
-        //var iPoint = raycaster.ray.intersectPlane(iPlane)
-        
         var intersects = raycaster.intersectObjects(visiblePipes.children);
         
         visiblePipes.children.forEach(
@@ -381,6 +519,8 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
     var sourceNode // basisPoint
 
     drawMode.enter = function(currNode){
+        clearSpecs()
+    
         mode = drawMode
         
         sourceNode = currNode
@@ -425,7 +565,7 @@ function blarrg (n0,castRay,dx,dy,dz,l ) {
         var projector = new THREE.Projector();
         var raycaster = projector.pickingRay(mouseVector.clone(),orthoCamera)
         
-        var iPoint = blarrg(sourceNode.position.clone(),raycaster,positionSpecs.xd,positionSpecs.yd,positionSpecs.zd,positionSpecs.l)
+        var iPoint = blarrg(sourceNode.position.clone(),raycaster,positionSpecs.xd,positionSpecs.yd,positionSpecs.zd,positionSpecs.ld)
         
         pt = iPoint
 
@@ -506,6 +646,8 @@ var keyUpHandle = function(e){
 
 
 document.addEventListener("click",clickHandle,false)
+
+document.getElementById("menu-box").addEventListener("click",function(e){e.stopPropagation()})
 
 document.addEventListener("keydown",keyDownHandle,false)
 

@@ -12,9 +12,20 @@ body{
 }
 
 div#menu-box{
+    background:white;
     position:absolute;
     right:20px;
     top:20px;
+    padding:10px;
+    border-left:3px solid green;
+}
+
+div#menu-box p{
+    margin:0px 0px 5px 0px;
+}
+
+div#menu-box div#position-box{
+    margin:0px 0px 10px 0px;
 }
 
 div#position-box input{
@@ -43,6 +54,6 @@ span.activator:hover{
     background:lightBlue;
 }
 
-span.activator.active{
+.active span.activator{
     background:lightGrey;
 }
