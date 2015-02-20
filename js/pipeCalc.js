@@ -165,7 +165,10 @@ var constrainedPoint = function  (castRay,specs,n0) {
 
 }
 
+
+// export
 CALC.constrainedPoint = constrainedPoint
+CALC.parseLength = parseLength
 
 
 

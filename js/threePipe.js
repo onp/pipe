@@ -14,19 +14,21 @@ function getCursorPosition(e) {
 }
 
 var xposElem = document.getElementById("x-pos");
-var xboxElem = document.getElementById("x-box");
 var yposElem = document.getElementById("y-pos");
-var yboxElem = document.getElementById("y-box");
 var zposElem = document.getElementById("z-pos");
-var zboxElem = document.getElementById("z-box");
+
 var xdElem = document.getElementById("x-delta");
-var xdboxElem = document.getElementById("xd-box");
 var ydElem = document.getElementById("y-delta");
-var ydboxElem = document.getElementById("yd-box");
 var zdElem = document.getElementById("z-delta");
-var zdboxElem = document.getElementById("zd-box");
 var lElem = document.getElementById("l-delta");
-var lboxElem = document.getElementById("l-box");
+
+var xboxElems = document.getElementsByClassName("x-box");
+var yboxElems = document.getElementsByClassName("y-box");
+var zboxElems = document.getElementsByClassName("z-box");
+var lboxElems = document.getElementsByClassName("l-box");
+
+
+
 
 var positionSpecs = {};
 
@@ -35,7 +37,7 @@ var addInputListener = function (elem, spec, d) {
     
         elem.addEventListener("input",
             function (e) {
-                positionSpecs[spec] = parseLength(elem.value)
+                positionSpecs[spec] = PIPER.Calc.parseLength(elem.value)
             },
             false
         )
@@ -44,7 +46,7 @@ var addInputListener = function (elem, spec, d) {
     
         elem.addEventListener("input",
             function (e) {
-                positionSpecs[spec] = parseLength(elem.value)
+                positionSpecs[spec] = PIPER.Calc.parseLength(elem.value)
             },
             false
         )
@@ -64,28 +66,36 @@ addInputListener(lElem, "l")
 function updateCoords(vec,dVec){
     // Takes a position vector as input, and pushes it to the display box.
     
-    xposElem.value = vec.x.toFixed(3)
-    yposElem.value = vec.y.toFixed(3)
-    zposElem.value = vec.z.toFixed(3)
-    
-    if (dVec !== undefined) { 
-        xdElem.value = dVec.x.toFixed(3)
-        ydElem.value = dVec.y.toFixed(3)
-        zdElem.value = dVec.z.toFixed(3)
-        lElem.value = dVec.length().toFixed(3)
-    }
-    
-    if (positionSpecs.x !== undefined){
-        xboxElem.classList.add("active")
+	if (positionSpecs.x === undefined) {
+		xposElem.value = vec.x.toFixed(3)
+		if (dVec !== undefined) { xdElem.value = dVec.x.toFixed(3) }
+	} else {
+		Array.prototype.forEach.call(xboxElems, function (a) { a.classList.add("active") });
+	}
+	
+    if (positionSpecs.y === undefined){
+		yposElem.value = vec.y.toFixed(3)
+		if (dVec !== undefined) { ydElem.value = dVec.y.toFixed(3) }
+	} else {
+        Array.prototype.forEach.call(yboxElems, function (a) { a.classList.add("active") });
     };
-    
-    if (positionSpecs.y !== undefined){
-        document.getElementById("y-box").classList.add("active")
+	
+    if (positionSpecs.z === undefined){
+		zposElem.value = vec.z.toFixed(3)
+		if (dVec !== undefined) { zdElem.value = dVec.z.toFixed(3) }
+	} else {
+        Array.prototype.forEach.call(zboxElems, function (a) { a.classList.add("active") });
     };
+
+	if (positionSpecs.l === undefined){
+		if (dVec !== undefined) {lElem.value = dVec.length().toFixed(3)}
+    } else {
+		Array.prototype.forEach.call(lboxElems, function (a) { a.classList.add("active") });
+	}
     
-    if (positionSpecs.z !== undefined){
-        document.getElementById("z-box").classList.add("active")
-    };
+
+    
+
 }
 
 function clearSpecs(z) {
@@ -93,14 +103,13 @@ function clearSpecs(z) {
     positionSpecs.y  = undefined;
     positionSpecs.z  = undefined;
     positionSpecs.l = undefined;
+	
+	console.log(xboxElems)
     
-    xboxElem.classList.remove("active")
-    yboxElem.classList.remove("active")
-    zboxElem.classList.remove("active")
-    xdboxElem.classList.remove("active")
-    ydboxElem.classList.remove("active")
-    zdboxElem.classList.remove("active")
-    lboxElem.classList.remove("active")
+    Array.prototype.forEach.call(xboxElems, function (a) {a.classList.remove("active")});
+    Array.prototype.forEach.call(yboxElems, function (a) {a.classList.remove("active")});
+    Array.prototype.forEach.call(zboxElems, function (a) {a.classList.remove("active")});
+    Array.prototype.forEach.call(lboxElems, function (a) {a.classList.remove("active")});
 };
         
 
