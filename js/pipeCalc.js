@@ -1,9 +1,20 @@
 (function (CALC, undefined) {
     "use strict";
 
-    
+CALC.getCursorPosition = function (e) {
+    var x;
+    var y;
+    if (e.pageX != undefined && e.pageY != undefined) {
+        x = e.pageX;
+        y = e.pageY;
+    } else {
+        x = e.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+        y = e.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+    return [x,y]
+}
 
-var parseLength = function (l,unit) {
+CALC.parseLength = function (l,unit) {
     if (Number(l) !== NaN) {
         return Number(l)
     }
@@ -11,7 +22,7 @@ var parseLength = function (l,unit) {
 
 
 
-var constrainedPoint = function  (castRay,specs,n0) {
+CALC.constrainedPoint = function  (castRay,specs,n0) {
 // castRay: mouse ray [RayCaster]
 // n0: reference node location [Vector3]
 // Returns the point where a new node should be placed based on the mouse ray, reference node,
@@ -165,10 +176,6 @@ var constrainedPoint = function  (castRay,specs,n0) {
 
 }
 
-
-// export
-CALC.constrainedPoint = constrainedPoint
-CALC.parseLength = parseLength
 
 
 

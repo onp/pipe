@@ -12,7 +12,14 @@ segmentGeometry.applyMatrix(cTrans.makeTranslation(0,0.5,0))
 segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI/2))
 var segmentMaterial = new THREE.MeshLambertMaterial({color:0x00ff00})
 
+// Model //////////////////////////////////////////////////
 
+PIPER.Model = function(){
+	this.pipes = []
+	this.nodes = {}
+}
+
+PIPER.Model.prototype = {}
 
 // Segment //////////////////////////////////////////////////////////
 
