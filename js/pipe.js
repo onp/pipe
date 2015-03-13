@@ -3,7 +3,7 @@
 
 	
 ////////////////////////////////////////////////////
-
+// Positioner
 PIPER.Positioner = function(context){
 	
 	this.positionSpecs = {}
@@ -38,8 +38,71 @@ PIPER.Positioner.prototype = {
 }
 
 ////////////////////////////////////////////////////
+// Cursor
+
+var CursorFactory = function(context){
+	var cursor = {}
+	
+	cursor.node = new PIPER.Node(new THREE.Vector3(0,0,1));
+	cursor.segment = new PIPER.Segment(cursor.node);
+	cursor.group = new THREE.Object3D();
+	
+	cursor.group.add(cursor.node.makeMesh())
+	cursor.segment.makeMesh();
+	
+	cursor.target = cursor.node.mesh.position ;
+	cursor.start = undefined;
+	
+	cursor.setTarget = function(pos){
+		cursor.node.mesh.position.copy(pos)
+		
+		if (cursor.start !== undefined){
+			cursor.update()
+		}
+	}
+	
+	cursor.setStart = function(pos){
+		if (pos === undefined){
+			cursor.start = undefined;
+			cursor.group.remove(cursor.segment.mesh)
+			return
+		}
+		
+		if (cursor.start === undefined){
+			cursor.group.add(cursor.segment.mesh)
+		}
+		
+		cursor.start = pos
+		cursor.segment.mesh.position.copy(pos)
+
+	}
+	
+	cursor.update = function(){
+		if (cursor.start === undefined){ return }
+		
+		cursor.segment.mesh.scale.set(1,1,cursor.target.clone().sub(cursor.start).length())
+        cursor.segment.mesh.lookAt(cursor.target)
+	}
+	
+	cursor.show = function(){
+		context.scene.add(cursor.group)
+	}
+	
+	cursor.hide = function(){
+		context.scene.remove(cursor.group)
+	}
+	
+	
+	
+	
+	return cursor
+}
+
+
+
+////////////////////////////////////////////////////
 // Define "Create Mode" behaviour.
-var createModeFactory = function (context) {
+var CreateModeFactory = function (context) {
 	var createMode = {
 		name: "create"
 	}
@@ -50,21 +113,20 @@ var createModeFactory = function (context) {
         context.positioner.clear()
         context.positioner.positionSpecs.z = 0
         
-        context.cursorNode =  new PIPER.Node(new THREE.Vector3())
-        context.scene.add(context.cursorNode.makeMesh())
+        context.cursor.show()
     };
     
     createMode.leave = function () {
         context.mode = undefined;
-        context.scene.remove(context.cursorNode.mesh)
+        context.cursor.hide()
     }
     
     createMode.suspend = function () {
-        context.scene.remove(context.cursorNode.mesh)
+        context.cursor.hide()
     }
     
     createMode.resume = function () {
-        context.scene.add(context.cursorNode.mesh)
+        context.cursor.show()
     }
     
     createMode.onClick = function (e) {
@@ -75,7 +137,7 @@ var createModeFactory = function (context) {
             
         } else {
     
-            var newNode = new PIPER.Node(context.cursorNode.mesh.position.clone());
+            var newNode = new PIPER.Node(context.cursor.target.clone());
 
             context.model.nodes[newNode.uuid] = newNode;
             
@@ -110,7 +172,7 @@ var createModeFactory = function (context) {
             createMode.underMouse = null;
         };
         
-        context.cursorNode.mesh.position.copy(iPoint)
+        context.cursor.setTarget(iPoint)
 
     };
 
@@ -125,7 +187,7 @@ var createModeFactory = function (context) {
 ////////////////////////////////////////////////////
 // Define "Draw Mode" behaviour.
 
-var drawModeFactory = function (context) {
+var DrawModeFactory = function (context) {
 	var drawMode = {
 		name: "draw"
 	}
@@ -138,31 +200,29 @@ var drawModeFactory = function (context) {
         context.mode = drawMode
         
         sourceNode = currNode
-        
-        context.cursorSegment = new PIPER.Segment(sourceNode)
-        context.scene.add(context.cursorSegment.makeMesh())
+
+        context.cursor.setStart(sourceNode.mesh.position.clone())
+		context.cursor.show()
 
     }
     
     drawMode.suspend = function (){
-         context.scene.remove(context.cursorSegment.mesh)
-         context.scene.remove(context.cursorNode.mesh)
+         context.cursor.hide()
     }
     
     drawMode.resume = function () {
-         context.scene.add(context.cursorSegment.mesh)
-         context.scene.add(context.cursorNode.mesh)
+         context.cursor.show()
     }
 
     drawMode.onClick = function (e) {
     
-        var newNode = new PIPER.Node(context.cursorNode.mesh.position.clone())
+        var newNode = new PIPER.Node(context.cursor.target.clone())
 
         context.model.nodes[newNode.uuid] = newNode
         
         context.visibleNodes.add(newNode.makeMesh())
 
-        context.scene.remove(context.cursorSegment.mesh)
+        context.cursor.setStart()
         
         var newPipe = new PIPER.Segment(sourceNode,newNode)
         context.model.pipes.push(newPipe)
@@ -180,16 +240,12 @@ var drawModeFactory = function (context) {
         
         var pt = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs,sourceNode.mesh.position)
 
-        context.cursorNode.mesh.position.copy(pt)
-
-        context.cursorSegment.mesh.scale.set(1,1,pt.clone().sub(sourceNode.position).length())
-        context.cursorSegment.mesh.lookAt(pt)
+        context.cursor.setTarget(pt)
     }
     
     drawMode.onKeyDown = function(e){
         if (e.keyCode ==27){
-            context.scene.remove(context.cursorNode.mesh)
-            context.scene.remove(context.cursorSegment.mesh)
+            context.cursor.setStart()
             
             context.createMode.enter()
             
@@ -202,7 +258,7 @@ var drawModeFactory = function (context) {
 ////////////////////////////////////////////////////
 // Define "View Mode" behaviour
 
-var viewModeFactory = function (context) {
+var ViewModeFactory = function (context) {
 	
 	var viewMode = {
 		name:"view"
@@ -241,15 +297,14 @@ PIPER.Context = function(targetElem) {
 	this.camera = new THREE.OrthographicCamera(1,1,1,1,0.1,1000);
 	this.mode = undefined;
 	this.previousMode = undefined;
-	this.cursorNode = false;
-	this.cursorSegment = false;
+	this.cursor = CursorFactory(this);
 	this.model = new PIPER.Model()
 	
 	this.mouseState = {x:0,y:0,right:false,left:false}
 	
-	this.createMode = createModeFactory(this)
-	this.drawMode = drawModeFactory(this)
-	this.viewMode = viewModeFactory(this)
+	this.createMode = CreateModeFactory(this)
+	this.drawMode = DrawModeFactory(this)
+	this.viewMode = ViewModeFactory(this)
 	
 	var ctx = this
 
