@@ -4,28 +4,34 @@
 	
 ////////////////////////////////////////////////////
 // Positioner
-PIPER.Positioner = function(context){
+var PositionerFactory = function(context){
 	
-	this.positionSpecs = {}
+	var positioner = {}
 	
-	this.context = context
+	positioner.positionSpecs = {}
+	
+	var displayElement = document.getElementById("menu-box")
+	
+	var posTags = ["x-pos","y-pos","z-pos"]
+	var deltaTags = ["x-delta","y-delta","z-delta","l-delta"]
+	
+	var posElems = posTags.map(function(a){return document.getElementById(a)})
+	var deltaElems = deltaTags.map(function(a){return document.getElementById(a)})
 	
 	
-}
-
-PIPER.Positioner.prototype = {
 	
-	constructor: PIPER.Positioner,
 	
-	onFrame:function(){},
+	positioner.onFrame = function(){}
 	
-	show:function(){},
+	positioner.show = function(){
+		displayElement.style.display = "block";
+	}
 	
-	hide:function(){},
+	positioner.hide = function(){}
 	
-	setReference:function(){},
+	positioner.setReference = function(){}
 	
-	clear: function () {
+	positioner.clear = function () {
 		this.positionSpecs.x  = undefined;
 		this.positionSpecs.y  = undefined;
 		this.positionSpecs.z  = undefined;
@@ -34,7 +40,7 @@ PIPER.Positioner.prototype = {
 	}
 	
 	
-	
+	return positioner
 }
 
 ////////////////////////////////////////////////////
@@ -293,7 +299,7 @@ var ViewModeFactory = function (context) {
 
 PIPER.Context = function(targetElem) {
 	this.container = targetElem
-	this.positioner = new PIPER.Positioner(this)
+	this.positioner = PositionerFactory(this)
 	this.camera = new THREE.OrthographicCamera(1,1,1,1,0.1,1000);
 	this.mode = undefined;
 	this.previousMode = undefined;
@@ -336,7 +342,7 @@ PIPER.Context = function(targetElem) {
 	
 	this.onResize = function () {
 
-		canvasSize = [window.innerWidth-3,window.innerHeight-3]
+		canvasSize = [targetElem.offsetWidth-3,targetElem.offsetHeight-4]
 		aspectRatio = canvasSize[0]/canvasSize[1];
 		ctx.camera.left = orthoWidth/-2;
 		ctx.camera.right = orthoWidth/2;
@@ -414,6 +420,7 @@ PIPER.Context = function(targetElem) {
 	this.initializeScene()
 	this.onResize()
 	this.createMode.enter()
+	this.positioner.show()
 	render(this)
 	
 }

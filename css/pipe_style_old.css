@@ -11,24 +11,13 @@ body{
     right:0px;
 }
 
-#piping{
-	width:100%;
-	overflow:hidden;
-	height:100%;
-}
-
 div#menu-box{
-    background:rgba(256,256,256,0.8);
+    background:white;
     position:absolute;
     right:20px;
     top:20px;
     padding:10px;
     border-left:3px solid green;
-	box-shadow: 10px 5px 10px grey;
-}
-
-div#menu-box input{
-    background:rgba(256,256,256,0.0);
 }
 
 div#menu-box p{
