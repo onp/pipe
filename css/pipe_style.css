@@ -44,6 +44,23 @@ div#position-box input{
     border:none;
 }
 
+div#position-box div::before{
+	content:"";
+	display:inline-block;
+    min-width:15px;
+    height:15px;
+    border: 1px solid lightGrey;
+    border-radius:8px;
+}
+
+div#position-box div:hover::before{
+	background:lightBlue;
+}
+
+div#position-box div.active::before{
+	background:lightGrey;
+}
+
 div#delta-box{
     display:none;
 }
@@ -51,20 +68,4 @@ div#delta-box{
 div#delta-box input{
     width:45px;
     border:none;
-}
-
-span.activator{
-    display:inline-block;
-    min-width:15px;
-    height:15px;
-    border: 1px solid lightGrey;
-    border-radius:8px;
-}
-
-span.activator:hover{
-    background:lightBlue;
-}
-
-.active span.activator{
-    background:lightGrey;
 }

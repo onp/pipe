@@ -28,7 +28,7 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 // Returns the point where a new node should be placed based on the mouse ray, reference node,
 // and position specifications.
 
-	var a,b,norm;
+	var a,b,aNorm,bNorm;
     var dx,dy,dz,l;
 
     n0 = n0 || new THREE.Vector3();
@@ -78,7 +78,7 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 		dx = new THREE.Vector3(dx,0,0);
 
 		a = dx;
-        norm = new THREE.Vector3(1,0,0);
+        aNorm = new THREE.Vector3(1,0,0);
 
 	};
 
@@ -90,11 +90,12 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 		if ( a === undefined ) {
 
 			a = dy;
-            norm = new THREE.Vector3(0,1,0);
+            aNorm = new THREE.Vector3(0,1,0);
 
 		} else {
 
 			b = dy;
+			bNorm = new THREE.Vector3(0,1,0);
 
 		};
 
@@ -107,11 +108,12 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 		if ( a === undefined ) {
 
 			a = dz;
-            norm = new THREE.Vector3(0,0,1);
+            aNorm = new THREE.Vector3(0,0,1);
 
 		} else if ( b === undefined ) {
 
 			b = dz;
+			bNorm = new THREE.Vector3(0,0,1);
 
 		} else {
             
@@ -147,7 +149,7 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 
 		var targetPlane = new THREE.Plane()
 
-		targetPlane.setFromNormalAndCoplanarPoint(norm,n0.add(a))
+		targetPlane.setFromNormalAndCoplanarPoint(aNorm,n0.add(a))
         
         var pt = castRay.ray.intersectPlane(targetPlane)
         
@@ -161,7 +163,7 @@ CALC.constrainedPoint = function  (castRay,specs,n0) {
 
 		var c = new THREE.Vector3();
 
-		c.crossVectors(a,b).normalize().multiplyScalar(500);
+		c.crossVectors(aNorm,bNorm).normalize().multiplyScalar(500);
 
 		var closePoint = new THREE.Vector3();
         
