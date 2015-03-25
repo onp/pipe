@@ -7,21 +7,87 @@
 var PositionerFactory = function(context){
 	
 	var positioner = {}
+	positioner.context = context
 	
-	positioner.positionSpecs = {}
+	var positionSpecs = {}
+	positioner.positionSpecs = positionSpecs
 	
 	var displayElement = document.getElementById("menu-box")
 	
+	var markedActive = {x:false,y:false,z:false,l:false}
+	
+	var dims = ["x","y","z","l"]
 	var posTags = ["x-pos","y-pos","z-pos"]
 	var deltaTags = ["x-delta","y-delta","z-delta","l-delta"]
 	
 	var posElems = posTags.map(function(a){return document.getElementById(a)})
 	var deltaElems = deltaTags.map(function(a){return document.getElementById(a)})
 	
+	//hacky - to make the lists the same length, even though we don't care about magnitude of absolute position
+	posElems.push(document.createElement("div"))
+	
+	displayElement.addEventListener("click", function(e){
+		e.stopPropagation()
+	},false)
+	
+	var checkSpecs = function () {
+		for (var i=0;i<dims.length;i++){
+			if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]){
+				posElems[i].parentNode.classList.add("active")
+				deltaElems[i].parentNode.classList.add("active")
+				markedActive[dims[i]] = true;
+			}else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
+				posElems[i].parentNode.classList.remove("active")
+				deltaElems[i].parentNode.classList.remove("active")
+				markedActive[dims[i]] = false;
+			}
+		}
+	}	
+	
+	var onFocusGenerator = function(dim,elem){
+		var onFocus = function(e){
+			
+		if (positioner.positionSpecs[dim]) {	return	}
+		
+		positioner.positionSpecs[dim] = positioner.context.cursor.target[dim]
+		elem.parentNode.classList.add("active")
+			
+		}
+		
+		return onFocus
+	}
+	
+
+	
+	
+	//provide functionality
+	for (var i = 0; i<dims.length; i++){
+		
+		posElems[i].addEventListener("focus",
+			onFocusGenerator(dims[i],posElems[i]),
+			false
+		)
+		deltaElems[i].addEventListener("focus",
+			onFocusGenerator(dims[i],deltaElems[i]),
+			false
+		)
+		
+	}
 	
 	
 	
-	positioner.onFrame = function(){}
+	
+	positioner.onFrame = function(){
+		checkSpecs()
+		
+		for (var i=0;i<dims.length;i++){
+			if (positionSpecs[dims[i]] === undefined){
+				posElems[i].value = context.cursor.target[dims[i]]
+			}
+		}
+		
+		
+	}
 	
 	positioner.show = function(){
 		displayElement.style.display = "block";
@@ -179,6 +245,7 @@ var CreateModeFactory = function (context) {
         };
         
         context.cursor.setTarget(iPoint)
+		context.positioner.onFrame()
 
     };
 
@@ -247,6 +314,7 @@ var DrawModeFactory = function (context) {
         var pt = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs,sourceNode.mesh.position)
 
         context.cursor.setTarget(pt)
+		context.positioner.onFrame()
     }
     
     drawMode.onKeyDown = function(e){
