@@ -18,46 +18,58 @@ body{
 }
 
 div#menu-box{
-    background:rgba(256,256,256,0.8);
+    
     position:absolute;
     right:20px;
     top:20px;
-    padding:10px;
-    border-left:3px solid green;
-	box-shadow: 10px 5px 10px grey;
+
 }
 
 div#menu-box input{
     background:rgba(256,256,256,0.0);
 }
 
-div#menu-box p{
+.menu-group p{
     margin:0px 0px 5px 0px;
+	font-weight:bold;
 }
 
-div#menu-box div#position-box{
+.menu-group {
+	background:rgba(256,256,256,0.8);
+	padding:10px;
     margin:0px 0px 10px 0px;
+	border-left:3px solid green;
+	box-shadow: 10px 5px 10px grey;
 }
 
-div#position-box input{
+.menu-group div{
+	margin-top:5px;
+}
+
+.menu-group  input{
     width:45px;
     border:none;
+	vertical-align:middle;
 }
 
-div#position-box div::before{
-	content:"";
+.menu-group div .activator{
 	display:inline-block;
     min-width:15px;
+	vertical-align:middle;
     height:15px;
     border: 1px solid lightGrey;
     border-radius:8px;
 }
 
-div#position-box div:hover::before{
+.menu-group  div:hover .activator{
 	background:lightBlue;
 }
 
-div#position-box div.active::before{
+.menu-group  div.active .activator:hover{
+	background:lightCoral;
+}
+
+.menu-group  div.active .activator{
 	background:lightGrey;
 }
 

@@ -20,6 +20,11 @@ CALC.parseLength = function (l,unit) {
     }
 }
 
+CALC.formatLength = function(l,unit){
+	if (Math.abs(l) < 0.001){ l = 0}
+	return Number(l).toFixed(3)
+}
+
 
 
 CALC.constrainedPoint = function  (castRay,specs,n0) {

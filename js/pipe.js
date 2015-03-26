@@ -13,8 +13,10 @@ var PositionerFactory = function(context){
 	positioner.positionSpecs = positionSpecs
 	
 	var displayElement = document.getElementById("menu-box")
+	var deltaElement = document.getElementById("delta-box")
 	
-	var markedActive = {x:false,y:false,z:false,l:false}
+	var markedActive = {x:false,y:false,z:false,l:false};
+	var deltaVisible = deltaElement.style.display == "block";
 	
 	var dims = ["x","y","z","l"]
 	var posTags = ["x-pos","y-pos","z-pos"]
@@ -24,7 +26,17 @@ var PositionerFactory = function(context){
 	var deltaElems = deltaTags.map(function(a){return document.getElementById(a)})
 	
 	//hacky - to make the lists the same length, even though we don't care about magnitude of absolute position
-	posElems.push(document.createElement("div"))
+	var dummyParent = document.createElement("div")
+	var dummyChild1 = document.createElement("span")
+	var dummyChild2 = document.createElement("input")
+	dummyParent.appendChild(dummyChild1)
+	dummyParent.appendChild(dummyChild2)
+	posElems.push(dummyChild2)
+	
+	for (var i=0; i<dims.length;i++){
+		posElems[dims[i]] = posElems[i]
+		deltaElems[dims[i]] = deltaElems[i]
+	}
 	
 	displayElement.addEventListener("click", function(e){
 		e.stopPropagation()
@@ -34,6 +46,7 @@ var PositionerFactory = function(context){
 		for (var i=0;i<dims.length;i++){
 			if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]){
 				posElems[i].parentNode.classList.add("active")
+				posElems[i].value = PIPER.Calc.formatLength(positionSpecs[dims[i]])
 				deltaElems[i].parentNode.classList.add("active")
 				markedActive[dims[i]] = true;
 			}else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
@@ -42,19 +55,80 @@ var PositionerFactory = function(context){
 				markedActive[dims[i]] = false;
 			}
 		}
+		
+		if (deltaVisible && context.cursor.start === undefined){
+			deltaElement.style.display = "none"
+			deltaVisible = false
+		} else if (!deltaVisible && context.cursor.start !== undefined){
+			deltaElement.style.display = "block"
+			deltaVisible = true
+		}
 	}	
 	
 	var onFocusGenerator = function(dim,elem){
 		var onFocus = function(e){
 			
-		if (positioner.positionSpecs[dim]) {	return	}
+		if (positionSpecs[dim]) {	return	}
 		
-		positioner.positionSpecs[dim] = positioner.context.cursor.target[dim]
-		elem.parentNode.classList.add("active")
-			
+		if (dim != "l"){
+			positionSpecs[dim] = positioner.context.cursor.start ? positioner.context.cursor.start[dim] : 0
+		} else {
+			positionSpecs.x  = undefined;
+			positionSpecs.y  = undefined;
+			positionSpecs.z  = undefined;
+			positionSpecs[dim] = 1;
+		}
+		posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim])
+		if (dim == 'l'){
+			deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim])
+		} else {
+			deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim])
+		}
+		
+
 		}
 		
 		return onFocus
+	}
+	
+	var onActivatorClickGenerator = function(dim,elem){
+		var onActivatorClickGenerator = function(e){
+			if (positionSpecs[dim] === undefined) { return}
+			
+			e.stopPropagation()
+			
+			positionSpecs[dim] = undefined
+			
+		}
+		
+		return onActivatorClickGenerator
+		
+	}
+	
+	var onInputGenerator = function(dim,elem,isDelta){
+		
+		var onInput = function(e){
+			
+			if (!isDelta){
+				positionSpecs[dim] = PIPER.Calc.parseLength(elem.value)
+				deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim])
+				
+			}else{
+				if (dim == 'l'){
+					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value)
+					
+				} else {
+					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value) + context.cursor.start[dim]
+					posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim])
+					
+				}
+				
+			}
+			
+			
+		}
+		
+		return onInput
 	}
 	
 
@@ -63,13 +137,49 @@ var PositionerFactory = function(context){
 	//provide functionality
 	for (var i = 0; i<dims.length; i++){
 		
-		posElems[i].addEventListener("focus",
-			onFocusGenerator(dims[i],posElems[i]),
+		var p = posElems[i];
+		var d = deltaElems[i];
+		
+		//on Focus
+		p.addEventListener("focus",
+			onFocusGenerator(dims[i],p),
 			false
 		)
-		deltaElems[i].addEventListener("focus",
-			onFocusGenerator(dims[i],deltaElems[i]),
+		d.addEventListener("focus",
+			onFocusGenerator(dims[i],d),
 			false
+		)
+		
+		//on parent click
+		p.parentNode.addEventListener("click",
+			onFocusGenerator(dims[i],p),
+			false
+		)
+		d.parentNode.addEventListener("click",
+			onFocusGenerator(dims[i],d),
+			false
+		)
+		
+		// on input
+		p.addEventListener("input",
+			onInputGenerator(dims[i],p),
+			false
+		)
+		
+		d.addEventListener("input",
+			onInputGenerator(dims[i],d,true),
+			false
+		)
+		
+		// on activator click (deactivate)
+		p.previousElementSibling.addEventListener("click",
+			onActivatorClickGenerator(dims[i],p),
+			false		
+		)
+		
+		d.previousElementSibling.addEventListener("click",
+			onActivatorClickGenerator(dims[i],d),
+			false		
 		)
 		
 	}
@@ -82,10 +192,15 @@ var PositionerFactory = function(context){
 		
 		for (var i=0;i<dims.length;i++){
 			if (positionSpecs[dims[i]] === undefined){
-				posElems[i].value = context.cursor.target[dims[i]]
+				posElems[i].value = PIPER.Calc.formatLength(context.cursor.target[dims[i]])
+				
+				if (deltaVisible) {
+					deltaElems[i].value = PIPER.Calc.formatLength((dims[i] =="l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]])
+				}
+				
 			}
+			
 		}
-		
 		
 	}
 	
@@ -93,15 +208,15 @@ var PositionerFactory = function(context){
 		displayElement.style.display = "block";
 	}
 	
-	positioner.hide = function(){}
-	
-	positioner.setReference = function(){}
+	positioner.hide = function(){
+		displayElement.style.display = "none"
+	}
 	
 	positioner.clear = function () {
-		this.positionSpecs.x  = undefined;
-		this.positionSpecs.y  = undefined;
-		this.positionSpecs.z  = undefined;
-		this.positionSpecs.l = undefined;
+		positionSpecs.x  = undefined;
+		positionSpecs.y  = undefined;
+		positionSpecs.z  = undefined;
+		positionSpecs.l = undefined;
 		
 	}
 	
@@ -124,6 +239,7 @@ var CursorFactory = function(context){
 	
 	cursor.target = cursor.node.mesh.position ;
 	cursor.start = undefined;
+	cursor.diff = new THREE.Vector3();
 	
 	cursor.setTarget = function(pos){
 		cursor.node.mesh.position.copy(pos)
@@ -145,6 +261,7 @@ var CursorFactory = function(context){
 		}
 		
 		cursor.start = pos
+		cursor.diff.subVectors(cursor.target,cursor.start)
 		cursor.segment.mesh.position.copy(pos)
 
 	}
@@ -154,6 +271,7 @@ var CursorFactory = function(context){
 		
 		cursor.segment.mesh.scale.set(1,1,cursor.target.clone().sub(cursor.start).length())
         cursor.segment.mesh.lookAt(cursor.target)
+		cursor.diff.subVectors(cursor.target,cursor.start)
 	}
 	
 	cursor.show = function(){
@@ -176,7 +294,9 @@ var CursorFactory = function(context){
 // Define "Create Mode" behaviour.
 var CreateModeFactory = function (context) {
 	var createMode = {
-		name: "create"
+		name: "create",
+		hoveredPipe:null,
+		hoveredNode:null
 	}
 	
     createMode.enter = function(){
@@ -203,9 +323,10 @@ var CreateModeFactory = function (context) {
     
     createMode.onClick = function (e) {
     
-        if (createMode.underMouse !== null){
+        if (createMode.hoveredPipe !== null || createMode.hoveredNode !== null){
         
-            console.log(createMode.underMouse);
+            console.log(createMode.hoveredPipe);
+            console.log(createMode.hoveredNode);
             
         } else {
     
@@ -228,20 +349,37 @@ var CreateModeFactory = function (context) {
         
         var iPoint = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs)
         
-        var intersects = raycaster.intersectObjects(context.visiblePipes.children);
+        var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
+		var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
         
-        context.visiblePipes.children.forEach(
-            function ( pipe ) {
-                pipe.material.color.setHex(0x00ff00);
-            }
-        )
+		if (createMode.hoveredPipe !== null){
+			createMode.hoveredPipe.mesh.material.color.setHex(0x00ff00);
+		}
+
+		if (createMode.hoveredNode !== null){
+			createMode.hoveredNode.mesh.material.color.setHex(0xff0000);
+		}
+		
+        // context.visiblePipes.children.forEach(
+            // function ( pipe ) {
+                // pipe.material.color.setHex(0x00ff00);
+            // }
+        // )
         
-        if (intersects.length > 0){
-            intersects[0].object.material.color.setHex(0x0000ff);
-            createMode.underMouse = intersects[0].object.userData.owner
+        if (pipeIntersects.length > 0){
+            pipeIntersects[0].object.material.color.setHex(0x0000ff);
+            createMode.hoveredPipe = pipeIntersects[0].object.userData.owner
             
         } else {
-            createMode.underMouse = null;
+            createMode.hoveredPipe = null;
+        };
+
+        if (nodeIntersects.length > 0){
+            nodeIntersects[0].object.material.color.setHex(0x0000ff);
+            createMode.hoveredNode = nodeIntersects[0].object.userData.owner
+            
+        } else {
+            createMode.hoveredNode = null;
         };
         
         context.cursor.setTarget(iPoint)
@@ -311,7 +449,7 @@ var DrawModeFactory = function (context) {
         var projector = new THREE.Projector();
         var raycaster = projector.pickingRay(mouseVector.clone(),context.camera)
         
-        var pt = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs,sourceNode.mesh.position)
+        var pt = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs,sourceNode.mesh.position.clone())
 
         context.cursor.setTarget(pt)
 		context.positioner.onFrame()
