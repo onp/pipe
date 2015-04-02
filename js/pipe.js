@@ -478,10 +478,12 @@ var ViewModeFactory = function (context) {
 	
     viewMode.enter = function(){
         context.controls.enabled = true;
+        context.controlsP.enabled = true;
     };
     
     viewMode.leave = function(){
         context.controls.enabled = false;
+        context.controlsP.enabled = false;
     };
     
     viewMode.onClick = function(){}
@@ -506,7 +508,11 @@ var ViewModeFactory = function (context) {
 PIPER.Context = function(targetElem) {
 	this.container = targetElem
 	this.positioner = PositionerFactory(this)
-	this.camera = new THREE.OrthographicCamera(1,1,1,1,0.1,1000);
+	
+	this.cameraO = new THREE.OrthographicCamera(1,1,1,1,0.1,1000)
+	this.cameraP = new THREE.PerspectiveCamera(50,1,0.1,1000)
+	this.camera = this.cameraO
+	
 	this.mode = undefined;
 	this.previousMode = undefined;
 	this.cursor = CursorFactory(this);
@@ -524,13 +530,13 @@ PIPER.Context = function(targetElem) {
 	document.addEventListener('mousemove',function(e){
 		var cp = PIPER.Calc.getCursorPosition(e)
 		ctx.mouseState.x = cp[0];
-		ctx.mouseState.ndcX = 2*((cp[0] - renderer.domElement.offsetLeft)/canvasSize[0]) - 1
+		ctx.mouseState.ndcX = 2*((cp[0] - renderer.domElement.offsetLeft)/canvWidth) - 1
 		ctx.mouseState.y = cp[1];
-		ctx.mouseState.ndcY = 1 - 2*((cp[1] - renderer.domElement.offsetTop)/canvasSize[1]);
+		ctx.mouseState.ndcY = 1 - 2*((cp[1] - renderer.domElement.offsetTop)/canvHeight);
 	},false)
 
 
-	var canvasSize,aspectRatio;
+	var canvWidth,canvHeight,aspectRatio;
 
 	var orthoWidth = 20;
 
@@ -547,16 +553,21 @@ PIPER.Context = function(targetElem) {
 	this.renderer = renderer
 	
 	this.onResize = function () {
-
-		canvasSize = [targetElem.offsetWidth-3,targetElem.offsetHeight-4]
-		aspectRatio = canvasSize[0]/canvasSize[1];
-		ctx.camera.left = orthoWidth/-2;
-		ctx.camera.right = orthoWidth/2;
-		ctx.camera.top = orthoWidth/(2*aspectRatio)
-		ctx.camera.bottom = orthoWidth/(-2*aspectRatio)
-		ctx.camera.updateProjectionMatrix()
 		
-		renderer.setSize(canvasSize[0], canvasSize[1]);
+		canvWidth = targetElem.offsetWidth-3;
+		canvHeight = targetElem.offsetHeight-4;
+		aspectRatio = canvWidth/canvHeight;
+		
+		ctx.cameraP.aspect = aspectRatio;
+		ctx.cameraP.updateProjectionMatrix();
+		
+		ctx.cameraO.left = orthoWidth/-2;
+		ctx.cameraO.right = orthoWidth/2;
+		ctx.cameraO.top = orthoWidth/(2*aspectRatio)
+		ctx.cameraO.bottom = orthoWidth/(-2*aspectRatio)
+		ctx.cameraO.updateProjectionMatrix()
+		
+		renderer.setSize(canvWidth, canvHeight);
 
 	}
 
@@ -662,12 +673,17 @@ PIPER.Context.prototype = {
 		light2.position.set(-200, 0, -200);
 		this.scene.add(light2);
 
-		this.camera.position.set(200,200,200);
-		this.camera.up = new THREE.Vector3(0,0,1);
-		this.camera.lookAt(new THREE.Vector3(0,0,0));
+		this.cameraO.position.set(200,200,200);
+		this.cameraP.position.set(200,200,200);
+		this.cameraO.up = new THREE.Vector3(0,0,1);
+		this.cameraP.up = new THREE.Vector3(0,0,1);
+		this.cameraO.lookAt(new THREE.Vector3(0,0,0));
+		this.cameraP.lookAt(new THREE.Vector3(0,0,0));
 
-		this.controls = new THREE.OrbitControls(this.camera, this.container);
+		this.controls = new THREE.OrbitControls(this.cameraO, this.container);
+		this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 		this.controls.enabled = false;
+		this.controlsP.enabled = false;
 		
 	}
 	

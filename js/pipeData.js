@@ -1,3 +1,7 @@
+//Define: X = NORTH
+//        Y = UP
+//        Z = EAST
+
 (function (PIPER, undefined) {
     "use strict";
 
