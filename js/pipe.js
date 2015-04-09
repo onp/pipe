@@ -344,8 +344,9 @@ var CreateModeFactory = function (context) {
     createMode.onFrame = function (e) {
         
         var mouseVector = new THREE.Vector3(context.mouseState.ndcX,context.mouseState.ndcY,0)
-        var projector = new THREE.Projector();
-        var raycaster = projector.pickingRay(mouseVector.clone(),context.camera)
+
+        var raycaster = new THREE.Raycaster()
+		raycaster.setFromCamera(mouseVector.clone(),context.camera)
         
         var iPoint = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs)
         
@@ -446,8 +447,9 @@ var DrawModeFactory = function (context) {
     drawMode.onFrame = function (e) {
         
         var mouseVector = new THREE.Vector3(context.mouseState.ndcX,context.mouseState.ndcY,0)
-        var projector = new THREE.Projector();
-        var raycaster = projector.pickingRay(mouseVector.clone(),context.camera)
+
+		var raycaster = new THREE.Raycaster()
+		raycaster.setFromCamera(mouseVector.clone(),context.camera)
         
         var pt = PIPER.Calc.constrainedPoint(raycaster,context.positioner.positionSpecs,sourceNode.mesh.position.clone())
 
