@@ -230,7 +230,7 @@ var PositionerFactory = function(context){
 var CursorFactory = function(context){
 	var cursor = {}
 	
-	cursor.node = new PIPER.Node(new THREE.Vector3(0,0,1));
+	cursor.node = new PIPER.Node(new THREE.Vector3(0,1,0));
 	cursor.segment = new PIPER.Segment(cursor.node);
 	cursor.group = new THREE.Object3D();
 	
@@ -303,7 +303,7 @@ var CreateModeFactory = function (context) {
         context.mode = createMode
         
         context.positioner.clear()
-        context.positioner.positionSpecs.z = 0
+        context.positioner.positionSpecs.y = 0
         
         context.cursor.show()
     };
@@ -512,7 +512,7 @@ PIPER.Context = function(targetElem) {
 	this.positioner = PositionerFactory(this)
 	
 	this.cameraO = new THREE.OrthographicCamera(1,1,1,1,0.1,1000)
-	this.cameraP = new THREE.PerspectiveCamera(50,1,0.1,1000)
+	this.cameraP = new THREE.PerspectiveCamera(15,1,0.1,1000)
 	this.camera = this.cameraO
 	
 	this.mode = undefined;
@@ -593,15 +593,15 @@ PIPER.Context = function(targetElem) {
 		
 	}
 	
-	document.addEventListener("wheel",function(e){
-		if ((e.wheelDeltaY>0) || (e.deltaY<0)){
-			orthoWidth *= 1.25;
-		}else{
-			orthoWidth *= 0.8;
-		}
-		ctx.onResize();
+	// document.addEventListener("wheel",function(e){
+		// if ((e.wheelDeltaY>0) || (e.deltaY<0)){
+			// orthoWidth *= 1.25;
+		// }else{
+			// orthoWidth *= 0.8;
+		// }
+		// ctx.onResize();
 
-	},false)
+	// },false)
 	
 	var clickHandle = function(e){
 		if (!e.ctrlKey){
@@ -610,7 +610,7 @@ PIPER.Context = function(targetElem) {
 	}
 
 	var keyDownHandle = function(e){
-		if (e.keyCode==17){
+		if (e.keyCode==86){
 			ctx.previousMode = ctx.mode
 			ctx.mode.suspend()
 			ctx.viewMode.enter()
@@ -620,7 +620,7 @@ PIPER.Context = function(targetElem) {
 	}
 
 	var keyUpHandle = function(e){
-		if (e.keyCode==17){
+		if (e.keyCode==86){
 			ctx.viewMode.leave()
 			ctx.previousMode.resume()
 			ctx.previousMode = undefined;
@@ -668,17 +668,17 @@ PIPER.Context.prototype = {
 		this.scene.add(axisHelper);
 
 		var light = new THREE.PointLight(0xffffff);
-		light.position.set(200, 0, 200);
+		light.position.set(200, 200, 0);
 		this.scene.add(light);
 
 		var light2 = new THREE.PointLight(0x404040);
-		light2.position.set(-200, 0, -200);
+		light2.position.set(-200, -200, 0);
 		this.scene.add(light2);
 
-		this.cameraO.position.set(200,200,200);
-		this.cameraP.position.set(200,200,200);
-		this.cameraO.up = new THREE.Vector3(0,0,1);
-		this.cameraP.up = new THREE.Vector3(0,0,1);
+		this.cameraO.position.set(20,20,20);
+		this.cameraP.position.set(20,20,20);
+		this.cameraO.up = new THREE.Vector3(0,1,0);
+		this.cameraP.up = new THREE.Vector3(0,1,0);
 		this.cameraO.lookAt(new THREE.Vector3(0,0,0));
 		this.cameraP.lookAt(new THREE.Vector3(0,0,0));
 
