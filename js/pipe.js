@@ -288,6 +288,67 @@ var CursorFactory = function(context){
 	return cursor
 }
 
+////////////////////////////////////////////////////
+// Mode Manager
+
+var ModeManagerFactory = function (context) {
+	var modeManager = {
+		mode:undefined
+	}
+	
+	var modes = {};
+	var keyCodes = {};
+	
+	var toggleMode = function(mode){
+		if (mode.state != "on"){
+			mode.enter()
+		} else {
+			mode.leave()
+		}
+		modeManager.update()
+	}
+	
+	modeManager.addMode = function (mode,element,keyCode) {
+		modes[mode.name] = {mode:mode, element:element, keyCode:keyCode}
+		keyCodes[keyCode] = modes[mode.name]
+		
+		element.addEventListener("click",function (e) {
+			event.stopPropagation()
+			toggleMode(mode)
+		},
+		false)
+	}
+	
+	modeManager.onKeyDown = function(e){
+		if (keyCodes[e.keyCode]){
+			toggleMode(keyCodes[e.keyCode].mode)
+		}
+	}
+	
+	modeManager.update = function(){
+		
+		console.log("updating")
+		
+		for (var modeName in modes){
+			
+			var modeData = modes[modeName]
+			
+			if (modeData.mode.state == "off"){
+				modeData.element.classList.remove("active")
+				modeData.element.classList.remove("suspended")
+			} else if(modeData.mode.state == "on"){
+				modeData.element.classList.add("active")
+				modeData.element.classList.remove("suspended")
+			} else if(modeData.mode.state == "suspend"){
+				modeData.element.classList.remove("active")
+				modeData.element.classList.add("suspended")
+			}
+		}
+	}
+	
+	return modeManager
+	
+}
 
 
 ////////////////////////////////////////////////////
@@ -295,29 +356,43 @@ var CursorFactory = function(context){
 var CreateModeFactory = function (context) {
 	var createMode = {
 		name: "create",
+		state: "off",
 		hoveredPipe:null,
 		hoveredNode:null
 	}
 	
     createMode.enter = function(){
+		if (context.mode){
+			context.mode.leave(true)
+		}
+		
         context.mode = createMode
+		this.state = "on"
         
         context.positioner.clear()
         context.positioner.positionSpecs.y = 0
         
         context.cursor.show()
+		context.modeManager.update()
     };
     
-    createMode.leave = function () {
+    createMode.leave = function (fromBaseMode) {
         context.mode = undefined;
+		this.state = "off"
         context.cursor.hide()
+		if (!fromBaseMode){
+			context.createMode.enter()
+		}
     }
     
     createMode.suspend = function () {
+		this.state = "suspend"
+		console.log("suspended")
         context.cursor.hide()
     }
     
     createMode.resume = function () {
+		context.mode = createMode
         context.cursor.show()
     }
     
@@ -401,29 +476,51 @@ var CreateModeFactory = function (context) {
 
 var DrawModeFactory = function (context) {
 	var drawMode = {
-		name: "draw"
+		name: "draw",
+		state: "off"
 	}
 
     var sourceNode // basisPoint
 
     drawMode.enter = function(currNode){
+		if (context.mode){
+			context.mode.leave(true)
+		}
+		
+		if (!currNode){
+			context.createMode.enter()
+			return
+		}
+		
         context.positioner.clear()
     
         context.mode = drawMode
+		this.state = "on"
         
         sourceNode = currNode
 
         context.cursor.setStart(sourceNode.mesh.position.clone())
 		context.cursor.show()
-
+		context.modeManager.update()
     }
     
     drawMode.suspend = function (){
-         context.cursor.hide()
+		this.state = "suspend"
+        context.cursor.hide()
     }
+	
+	drawMode.leave = function (fromBaseMode){
+		this.state = "off"
+		context.cursor.setStart()
+		
+		if(!fromBaseMode){
+			context.createMode.enter()
+		}
+	}
     
     drawMode.resume = function () {
-         context.cursor.show()
+		context.mode = drawMode
+        context.cursor.show()
     }
 
     drawMode.onClick = function (e) {
@@ -459,10 +556,7 @@ var DrawModeFactory = function (context) {
     
     drawMode.onKeyDown = function(e){
         if (e.keyCode ==27){
-            context.cursor.setStart()
-            
-            context.createMode.enter()
-            
+            drawMode.leave()
         }
     }
     
@@ -475,22 +569,37 @@ var DrawModeFactory = function (context) {
 var ViewModeFactory = function (context) {
 	
 	var viewMode = {
-		name:"view"
+		name:"view",
+		state: "off"
 	}
 	
     viewMode.enter = function(){
+		if (context.mode && (context.mode.name != "view")){
+			context.previousMode = context.mode
+			console.log("suspending")
+			context.mode.suspend()
+		}
+		
+		context.mode = viewMode
+		this.state = "on"
+		
         context.controls.enabled = true;
         context.controlsP.enabled = true;
+		context.modeManager.update()
     };
     
     viewMode.leave = function(){
+		if (context.previousMode){
+			context.previousMode.resume()
+		}
+		this.state = "off"
         context.controls.enabled = false;
         context.controlsP.enabled = false;
     };
     
     viewMode.onClick = function(){}
     
-    viewMode.onKeydown = function(){}
+    viewMode.onKeyDown = function(){}
     
     viewMode.onFrame = function(){}
 
@@ -522,9 +631,15 @@ PIPER.Context = function(targetElem) {
 	
 	this.mouseState = {x:0,y:0,right:false,left:false}
 	
+	this.modeManager = ModeManagerFactory(this)
+	
 	this.createMode = CreateModeFactory(this)
 	this.drawMode = DrawModeFactory(this)
 	this.viewMode = ViewModeFactory(this)
+	
+	this.modeManager.addMode(this.createMode,document.getElementById("create-mode"),67)
+	this.modeManager.addMode(this.drawMode,document.getElementById("draw-mode"),68)
+	this.modeManager.addMode(this.viewMode,document.getElementById("view-mode"),86)
 	
 	var ctx = this
 
@@ -610,22 +725,23 @@ PIPER.Context = function(targetElem) {
 	}
 
 	var keyDownHandle = function(e){
-		if (e.keyCode==86){
-			ctx.previousMode = ctx.mode
-			ctx.mode.suspend()
-			ctx.viewMode.enter()
-			return
-		}
+		// if (e.keyCode==86){
+			// ctx.previousMode = ctx.mode
+			// ctx.mode.suspend()
+			// ctx.viewMode.enter()
+			// return
+		// }
 		ctx.mode.onKeyDown(e)
+		ctx.modeManager.onKeyDown(e)
 	}
 
 	var keyUpHandle = function(e){
-		if (e.keyCode==86){
-			ctx.viewMode.leave()
-			ctx.previousMode.resume()
-			ctx.previousMode = undefined;
-			return
-		}
+		// if (e.keyCode==86){
+			// ctx.viewMode.leave()
+			// ctx.previousMode.resume()
+			// ctx.previousMode = undefined;
+			// return
+		// }
 	}
 
 
@@ -640,6 +756,7 @@ PIPER.Context = function(targetElem) {
 	this.onResize()
 	this.createMode.enter()
 	this.positioner.show()
+	this.modeManager.update()
 	render(this)
 	
 }

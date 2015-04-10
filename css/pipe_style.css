@@ -17,12 +17,13 @@ body{
 	height:100%;
 }
 
+/* menu box */
+/*=========================================*/
+
 div#menu-box{
-    
     position:absolute;
     right:20px;
     top:20px;
-
 }
 
 div#menu-box input{
@@ -80,4 +81,35 @@ div#delta-box{
 div#delta-box input{
     width:45px;
     border:none;
+}
+
+/* mode box */
+/*=========================================*/
+
+div#mode-box{
+    position:absolute;
+    left:20px;
+    top:20px;
+}
+
+div.mode-button{
+	padding:10px;
+	width:34px;
+    border: 1px solid lightGrey;
+    border-radius:27px;
+	text-align:center;
+	font-size:30px;
+	margin:5px;
+}
+
+div.mode-button:hover{
+	background-color:lightBlue;
+}
+
+div.mode-button.active{
+	background:lightGreen;
+}
+
+div.mode-button.suspended{
+	background:lightCoral;
 }
