@@ -435,12 +435,6 @@ var CreateModeFactory = function (context) {
 		if (createMode.hoveredNode !== null){
 			createMode.hoveredNode.mesh.material.color.setHex(0xff0000);
 		}
-		
-        // context.visiblePipes.children.forEach(
-            // function ( pipe ) {
-                // pipe.material.color.setHex(0x00ff00);
-            // }
-        // )
         
         if (pipeIntersects.length > 0){
             pipeIntersects[0].object.material.color.setHex(0x0000ff);
@@ -711,16 +705,6 @@ PIPER.Context = function(targetElem) {
 		
 	}
 	
-	// document.addEventListener("wheel",function(e){
-		// if ((e.wheelDeltaY>0) || (e.deltaY<0)){
-			// orthoWidth *= 1.25;
-		// }else{
-			// orthoWidth *= 0.8;
-		// }
-		// ctx.onResize();
-
-	// },false)
-	
 	var clickHandle = function(e){
 		if (!e.ctrlKey){
 			ctx.mode.onClick(e);
@@ -728,23 +712,11 @@ PIPER.Context = function(targetElem) {
 	}
 
 	var keyDownHandle = function(e){
-		// if (e.keyCode==86){
-			// ctx.previousMode = ctx.mode
-			// ctx.mode.suspend()
-			// ctx.viewMode.enter()
-			// return
-		// }
 		ctx.mode.onKeyDown(e)
 		ctx.modeManager.onKeyDown(e)
 	}
 
 	var keyUpHandle = function(e){
-		// if (e.keyCode==86){
-			// ctx.viewMode.leave()
-			// ctx.previousMode.resume()
-			// ctx.previousMode = undefined;
-			// return
-		// }
 	}
 
 
