@@ -11,15 +11,67 @@ body{
     right:0px;
 }
 
+#piping{
+	width:100%;
+	overflow:hidden;
+	height:100%;
+}
+
+/* menu box */
+/*=========================================*/
+
 div#menu-box{
     position:absolute;
     right:20px;
     top:20px;
 }
 
-div#position-box input{
+div#menu-box input{
+    background:rgba(256,256,256,0.0);
+}
+
+.menu-group p{
+    margin:0px 0px 5px 0px;
+	font-weight:bold;
+}
+
+.menu-group {
+	background:rgba(256,256,256,0.8);
+	padding:10px;
+    margin:0px 0px 10px 0px;
+	border-left:3px solid green;
+	box-shadow: 10px 5px 10px grey;
+}
+
+.menu-group div{
+	margin-top:5px;
+}
+
+.menu-group  input{
     width:45px;
     border:none;
+	vertical-align:middle;
+}
+
+.menu-group div .activator{
+	display:inline-block;
+    min-width:15px;
+	vertical-align:middle;
+    height:15px;
+    border: 1px solid lightGrey;
+    border-radius:8px;
+}
+
+.menu-group  div:hover .activator{
+	background:lightBlue;
+}
+
+.menu-group  div.active .activator:hover{
+	background:lightCoral;
+}
+
+.menu-group  div.active .activator{
+	background:lightGrey;
 }
 
 div#delta-box{
@@ -31,18 +83,70 @@ div#delta-box input{
     border:none;
 }
 
-span.activator{
-    display:inline-block;
-    min-width:15px;
-    height:15px;
+/* circle buttons */
+/*=========================================*/
+
+.circle-button{
+	background-color:white;
+	padding:10px;
+	width:34px;
     border: 1px solid lightGrey;
-    border-radius:8px;
+    border-radius:27px;
+	text-align:center;
+	font-size:30px;
+	margin:10px;
 }
 
-span.activator:hover{
-    background:lightBlue;
+.circle-button:hover{
+	background-color:lightGreen;
 }
 
-span.activator.active{
-    background:lightGrey;
+.circle-button.active{
+	background:lightBlue;
+}
+
+.circle-button.suspended{
+	background:lightCoral;
+}
+
+.circle-button:hover::after{
+	position:absolute;
+	left:70px;
+	font-size:15px;
+}
+
+/* mode box */
+/*=========================================*/
+
+div#mode-box{
+    position:absolute;
+    left:20px;
+    top:20px;
+}
+
+#view-mode:hover::after{
+	content: "View mode";
+}
+
+#create-mode:hover::after{
+	content: "Create mode";
+}
+
+#draw-mode:hover::after{
+	content: "Draw mode";
+}
+
+
+
+/* view box */
+/*=========================================*/
+
+div#view-options-box{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+}
+
+#camera-toggle:hover::after{
+	content:"Toggle camera";
 }

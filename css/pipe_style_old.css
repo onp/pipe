@@ -1,0 +1,59 @@
+html{
+    height:100%;
+}
+
+body{
+    position:absolute;
+    margin:0px;
+    top:0px;
+    bottom:0px;
+    left:0px;
+    right:0px;
+}
+
+div#menu-box{
+    background:white;
+    position:absolute;
+    right:20px;
+    top:20px;
+    padding:10px;
+    border-left:3px solid green;
+}
+
+div#menu-box p{
+    margin:0px 0px 5px 0px;
+}
+
+div#menu-box div#position-box{
+    margin:0px 0px 10px 0px;
+}
+
+div#position-box input{
+    width:45px;
+    border:none;
+}
+
+div#delta-box{
+    display:none;
+}
+
+div#delta-box input{
+    width:45px;
+    border:none;
+}
+
+span.activator{
+    display:inline-block;
+    min-width:15px;
+    height:15px;
+    border: 1px solid lightGrey;
+    border-radius:8px;
+}
+
+span.activator:hover{
+    background:lightBlue;
+}
+
+.active span.activator{
+    background:lightGrey;
+}

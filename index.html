@@ -1,21 +1,81 @@
 <!DOCTYPE html>
-<html>
+<html >
 <head>
-	<meta charset="utf-8">
-	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-	<title>pipe</title>
-	<meta name="description" content="">
-	<meta name="viewport" content="width=device-width">
+	<title>3D Pipe Sketching</title>
 	
-	<link rel="stylesheet" href="css/normalize.css">
-    <link rel="stylesheet" href="css/pipe_style.css">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     
-    <script src="js/pipe.js"></script>
-	
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/pipe_style.css">
+    
+    <!--[if IE 9]>    <script src="js-lib/typedarray.js"></script>    <![endif]-->
+    
+    <script src="js-lib/ieShims.js"></script>
+    <script src="js-lib/three.js"></script>
+    <script src="js-lib/OrbitControls.js"></script>
+    <script src="js/pipeData.js"></script>
+    <script src="js/pipeCalc.js"></script>
+	<script src="js/pipe.js"></script>
+    <script src="js/index.js"></script>
 </head>
 
 <body>
-<canvas id="sketch"></canvas>
+    <div id="piping"></div>
 	
+	<div id="mode-box">
+		<div class="mode-button circle-button" id="view-mode">V</div>
+		<div class="mode-button circle-button" id="create-mode">C</div>
+		<div class="mode-button circle-button" id="draw-mode">D</div>
+	
+	</div>
+	
+	<div id="view-options-box">
+		<div class="circle-button" id="camera-toggle">P</div>
+	</div>
+	
+	<div id="menu-box">
+        <div id="position-box" class="menu-group">
+            <p>Position</p>
+            <div class="y-box">
+				<span class="activator"></span>
+                <input type="text" id="y-pos"></input>
+                <span type="label">ELEVATION</span>
+            </div>
+            <div class="x-box">
+				<span class="activator"></span>
+                <input type="text" id="x-pos"></input>
+                <span type="label">NORTH</span>
+            </div>
+            <div class="z-box">
+				<span class="activator"></span>
+                <input type="text" id="z-pos"></input>
+                <span type="label">EAST</span>
+            </div>
+        </div>
+        <div id="delta-box"class="menu-group">
+            <p>Delta</p>
+            <div class="y-box">
+				<span class="activator"></span>
+                <input type="text" id="y-delta"></input>
+                <span type="label">ELEVATION</span>
+            </div>
+            <div class="x-box">
+				<span class="activator"></span>
+                <input type="text" id="x-delta"></input>
+                <span type="label">NORTH</span>
+            </div>
+            <div class="z-box">
+				<span class="activator"></span>
+                <input type="text" id="z-delta"></input>
+                <span type="label">EAST</span>
+            </div>
+            <div class="l-box">
+				<span class="activator"></span>
+                <input type="text" id="l-delta"></input>
+                <span type="label">LENGTH</span>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
