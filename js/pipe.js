@@ -577,7 +577,7 @@ var ViewModeFactory = function (context) {
 		context.mode = viewMode
 		this.state = "on"
 		
-        context.controls.enabled = true;
+        context.controlsO.enabled = true;
         context.controlsP.enabled = true;
 		context.modeManager.update()
     };
@@ -587,7 +587,7 @@ var ViewModeFactory = function (context) {
 			context.previousMode.resume()
 		}
 		this.state = "off"
-        context.controls.enabled = false;
+        context.controlsO.enabled = false;
         context.controlsP.enabled = false;
     };
     
@@ -693,7 +693,7 @@ PIPER.Context = function(targetElem) {
 			
 			ctex.mode.onFrame(ctex.mouseState)
 			
-			ctex.ctrlOtarget.position.copy(ctex.controls.target)
+			ctex.ctrlOtarget.position.copy(ctex.controlsO.target)
 			ctex.ctrlPtarget.position.copy(ctex.controlsP.target)
 		
 			renderer.render(ctex.scene,ctex.camera);
@@ -724,7 +724,15 @@ PIPER.Context = function(targetElem) {
 
 	document.addEventListener("keydown",keyDownHandle,false)
 
-	document.addEventListener("keyup",keyUpHandle,false)	
+	document.addEventListener("keyup",keyUpHandle,false)
+	
+	document.getElementById("camera-toggle").addEventListener("click",
+		function(e){
+			e.stopPropagation();
+			ctx.toggleCamera()
+		},
+		false
+	)
 	
 	
 	this.initializeScene()
@@ -774,9 +782,9 @@ PIPER.Context.prototype = {
 		this.cameraO.lookAt(new THREE.Vector3(0,0,0));
 		this.cameraP.lookAt(new THREE.Vector3(0,0,0));
 
-		this.controls = new THREE.OrbitControls(this.cameraO, this.container);
+		this.controlsO = new THREE.OrbitControls(this.cameraO, this.container);
 		this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
-		this.controls.enabled = false;
+		this.controlsO.enabled = false;
 		this.controlsP.enabled = false;
 		
 		this.ctrlOtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1))
@@ -785,6 +793,18 @@ PIPER.Context.prototype = {
 		this.scene.add(this.ctrlOtarget)
 		this.scene.add(this.ctrlPtarget)
 		
+	},
+	
+	toggleCamera: function(){
+		if (this.camera === this.cameraO){
+			this.controlsP.target.copy(this.controlsO.target)
+			this.cameraP.lookAt(this.controlsO.target)
+			this.camera = this.cameraP
+		} else {
+			this.controlsO.target.copy(this.controlsP.target)
+			this.cameraO.lookAt(this.controlsP.target)
+			this.camera = this.cameraO
+		}
 	}
 	
 

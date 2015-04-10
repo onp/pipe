@@ -113,3 +113,23 @@ div.mode-button.active{
 div.mode-button.suspended{
 	background:lightCoral;
 }
+
+
+/* view box */
+/*=========================================*/
+
+div#view-options-box{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+}
+
+#camera-toggle{
+	padding:10px;
+	width:34px;
+    border: 1px solid lightGrey;
+    border-radius:27px;
+	text-align:center;
+	font-size:30px;
+	margin:5px;
+}
