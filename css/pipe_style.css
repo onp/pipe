@@ -83,6 +83,38 @@ div#delta-box input{
     border:none;
 }
 
+/* circle buttons */
+/*=========================================*/
+
+.circle-button{
+	background-color:white;
+	padding:10px;
+	width:34px;
+    border: 1px solid lightGrey;
+    border-radius:27px;
+	text-align:center;
+	font-size:30px;
+	margin:10px;
+}
+
+.circle-button:hover{
+	background-color:lightGreen;
+}
+
+.circle-button.active{
+	background:lightBlue;
+}
+
+.circle-button.suspended{
+	background:lightCoral;
+}
+
+.circle-button:hover::after{
+	position:absolute;
+	left:70px;
+	font-size:15px;
+}
+
 /* mode box */
 /*=========================================*/
 
@@ -92,27 +124,18 @@ div#mode-box{
     top:20px;
 }
 
-div.mode-button{
-	padding:10px;
-	width:34px;
-    border: 1px solid lightGrey;
-    border-radius:27px;
-	text-align:center;
-	font-size:30px;
-	margin:5px;
+#view-mode:hover::after{
+	content: "View mode";
 }
 
-div.mode-button:hover{
-	background-color:lightBlue;
+#create-mode:hover::after{
+	content: "Create mode";
 }
 
-div.mode-button.active{
-	background:lightGreen;
+#draw-mode:hover::after{
+	content: "Draw mode";
 }
 
-div.mode-button.suspended{
-	background:lightCoral;
-}
 
 
 /* view box */
@@ -124,12 +147,6 @@ div#view-options-box{
     bottom:20px;
 }
 
-#camera-toggle{
-	padding:10px;
-	width:34px;
-    border: 1px solid lightGrey;
-    border-radius:27px;
-	text-align:center;
-	font-size:30px;
-	margin:5px;
+#camera-toggle:hover::after{
+	content:"Toggle camera";
 }
