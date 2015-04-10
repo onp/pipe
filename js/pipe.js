@@ -698,6 +698,9 @@ PIPER.Context = function(targetElem) {
 		var rdr = function(){
 			
 			ctex.mode.onFrame(ctex.mouseState)
+			
+			ctex.ctrlOtarget.position.copy(ctex.controls.target)
+			ctex.ctrlPtarget.position.copy(ctex.controlsP.target)
 		
 			renderer.render(ctex.scene,ctex.camera);
 			
@@ -803,6 +806,12 @@ PIPER.Context.prototype = {
 		this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 		this.controls.enabled = false;
 		this.controlsP.enabled = false;
+		
+		this.ctrlOtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1))
+		this.ctrlPtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1))
+		
+		this.scene.add(this.ctrlOtarget)
+		this.scene.add(this.ctrlPtarget)
 		
 	}
 	
