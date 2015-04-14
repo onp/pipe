@@ -237,6 +237,14 @@ var CursorFactory = function(context){
 	cursor.group.add(cursor.node.makeMesh())
 	cursor.segment.makeMesh();
 	
+	var linMat = new THREE.LineBasicMaterial({color:0x000000});
+	var linGeom = new THREE.Geometry();
+	linGeom.vertices.push(new THREE.Vector3(0,0,0))
+	linGeom.vertices.push(new THREE.Vector3(0,0,0))
+	linGeom.vertices.push(new THREE.Vector3(0,0,0))
+	linGeom.vertices.push(new THREE.Vector3(0,0,0))
+	cursor.angleHatching = new THREE.Line(linGeom,linMat);
+	
 	cursor.target = cursor.node.mesh.position ;
 	cursor.start = undefined;
 	cursor.diff = new THREE.Vector3();
@@ -253,16 +261,19 @@ var CursorFactory = function(context){
 		if (pos === undefined){
 			cursor.start = undefined;
 			cursor.group.remove(cursor.segment.mesh)
+			cursor.group.remove(cursor.angleHatching)
 			return
 		}
 		
 		if (cursor.start === undefined){
 			cursor.group.add(cursor.segment.mesh)
+			cursor.group.add(cursor.angleHatching)
 		}
 		
 		cursor.start = pos
 		cursor.diff.subVectors(cursor.target,cursor.start)
 		cursor.segment.mesh.position.copy(pos)
+		cursor.angleHatching.position.copy(pos)
 
 	}
 	
@@ -272,6 +283,11 @@ var CursorFactory = function(context){
 		cursor.segment.mesh.scale.set(1,1,cursor.target.clone().sub(cursor.start).length())
         cursor.segment.mesh.lookAt(cursor.target)
 		cursor.diff.subVectors(cursor.target,cursor.start)
+		
+		cursor.angleHatching.geometry.vertices[1] = new THREE.Vector3(cursor.diff.x,0,0)
+		cursor.angleHatching.geometry.vertices[2] = new THREE.Vector3(cursor.diff.x,0,cursor.diff.z)
+		cursor.angleHatching.geometry.vertices[3] = new THREE.Vector3(cursor.diff.x,cursor.diff.y,cursor.diff.z)
+		cursor.angleHatching.geometry.verticesNeedUpdate = true
 	}
 	
 	cursor.show = function(){
