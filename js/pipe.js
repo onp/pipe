@@ -343,8 +343,6 @@ var ModeManagerFactory = function (context) {
 	
 	modeManager.update = function(){
 		
-		console.log("updating")
-		
 		for (var modeName in modes){
 			
 			var modeData = modes[modeName]
@@ -403,7 +401,6 @@ var CreateModeFactory = function (context) {
     
     createMode.suspend = function () {
 		this.state = "suspend"
-		console.log("suspended")
         context.cursor.hide()
     }
     
@@ -586,7 +583,6 @@ var ViewModeFactory = function (context) {
     viewMode.enter = function(){
 		if (context.mode && (context.mode.name != "view")){
 			context.previousMode = context.mode
-			console.log("suspending")
 			context.mode.suspend()
 		}
 		
@@ -652,6 +648,7 @@ PIPER.Context = function(targetElem) {
 	this.modeManager.addMode(this.viewMode,document.getElementById("view-mode"),86)
 	
 	var ctx = this
+	this.ctx = this
 
 
 	document.addEventListener('mousemove',function(e){
@@ -750,6 +747,28 @@ PIPER.Context = function(targetElem) {
 		false
 	)
 	
+	document.getElementById("file-box").addEventListener("click",
+		function(e){ e.stopPropagation()},
+		false
+	)
+	
+	document.getElementById("save-file").addEventListener("click",
+		function(e){
+			e.stopPropagation()
+			ctx.saveToFile()
+		},
+		false
+	)
+
+	document.getElementById("load-file").addEventListener("change",
+		function(e){
+			e.stopPropagation()
+			var file = this.files[0]
+			ctx.loadFromFile(file)
+		},
+		false
+	)
+	
 	
 	this.initializeScene()
 	this.onResize()
@@ -788,7 +807,7 @@ PIPER.Context.prototype = {
 		this.scene.add(light);
 
 		var light2 = new THREE.PointLight(0x404040);
-		light2.position.set(-200, -200, 0);
+		light2.position.set(-200, -100, 0);
 		this.scene.add(light2);
 
 		this.cameraO.position.set(20,20,20);
@@ -809,6 +828,59 @@ PIPER.Context.prototype = {
 		this.scene.add(this.ctrlOtarget)
 		this.scene.add(this.ctrlPtarget)
 		
+	},
+	
+	
+	saveToFile: function () {
+		var modelData = this.model.stringify()
+		var blob = new Blob([modelData],{type: "text/plain;charset=utf-8"})
+		saveAs(blob,"newModel.pipe")
+		
+	},
+	
+	loadFromFile: function(file){
+		
+		this.clearAll()
+		
+		var ctx = this.ctx;
+		var reader = new FileReader();
+		
+		reader.onload = function() {
+			
+			ctx.model.loadJSON(reader.result)
+			ctx.rebuildFromModel()
+			
+		}
+		
+		reader.readAsText(file)
+		
+	},
+	
+	clearDisplayElements: function(){
+		var ctx = this.ctx
+		THREE.Object3D.prototype.remove.apply(ctx.visiblePipes,ctx.visiblePipes.children)
+		THREE.Object3D.prototype.remove.apply(ctx.visibleNodes,ctx.visibleNodes.children)
+	},
+	
+	clearAll: function(){
+		this.clearDisplayElements()
+		this.model.clear()
+	},
+	
+	rebuildFromModel: function(){
+		
+		this.clearDisplayElements()
+		
+		var nodes = this.model.nodes
+		var pipes = this.model.pipes
+		
+		for (var nodeID in nodes){
+			this.visibleNodes.add(nodes[nodeID].makeMesh())
+		}
+		
+		for (var i = 0; i < pipes.length; i++){
+			this.visiblePipes.add(pipes[i].makeMesh())
+		}		
 	},
 	
 	toggleCamera: function(){

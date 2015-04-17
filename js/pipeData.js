@@ -23,7 +23,78 @@ PIPER.Model = function(){
 	this.nodes = {}
 }
 
-PIPER.Model.prototype = {}
+PIPER.Model.prototype = {
+	
+	toJSON: function () {
+		
+		var pipeJSON = []
+		
+		for (var i = 0; i< this.pipes.length; i++){
+			pipeJSON.push(this.pipes[i].toJSON())
+		}
+		
+		var nodeJSON = []
+		
+		for (var id in this.nodes){
+			nodeJSON.push(this.nodes[id].toJSON())
+		}
+		
+		return {pipes:pipeJSON,nodes:nodeJSON}
+		
+	},
+	
+	stringify: function (){
+		return JSON.stringify(this.toJSON())
+	},
+	
+	loadJSON: function(data) {
+		console.log("loading")
+		
+		var jsonModel = JSON.parse(data);
+		
+		for (var i = 0; i < jsonModel.nodes.length; i++){
+			
+			var nodeData = jsonModel.nodes[i]
+			var newNode = new PIPER.Node(
+				new THREE.Vector3(	
+					nodeData.position.north,
+					nodeData.position.elevation,
+					nodeData.position.east
+				),
+				nodeData.uuid
+			)
+			
+			this.nodes[nodeData.uuid] = newNode
+			
+		}
+		
+		for (var i = 0; i<jsonModel.pipes.length; i++){
+			
+			var pipeData = jsonModel.pipes[i];
+			
+			var newPipe = new PIPER.Segment(
+				this.nodes[pipeData.node1],
+				this.nodes[pipeData.node2],
+				pipeData.d1,
+				pipeData.d2,
+				pipeData.uuid
+			)
+			
+			this.pipes.push(newPipe)
+			
+		}
+		
+		
+	},
+	
+	clear: function(){
+		
+		this.nodes = []
+		this.pipes = []
+		
+	}
+	
+}
 
 // Segment //////////////////////////////////////////////////////////
 
@@ -70,7 +141,7 @@ PIPER.Segment.prototype = {
 
     toJSON: function () {
      
-        return JSON.stringify([ this.node1.uuid, this.node2.uuid, this.diameter1, this.diameter2, this.uuid ])
+		return { node1:this.node1.uuid, node2:this.node2.uuid, d1:this.diameter1, d2:this.diameter2, uuid:this.uuid }
         
     }
     
@@ -119,7 +190,7 @@ PIPER.Node.prototype = {
     
     toJSON: function () {
     
-        return JSON.stringify( [this.uuid,[this.position.x,this.position.y,this.position.z]])
+        return {uuid:this.uuid,position:{north:this.position.x,elevation:this.position.y,east:this.position.z}}
     
     }
     
