@@ -599,7 +599,13 @@
 
 			var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 
-			context.cursor.setTarget(pt);
+			if (context.selector.hoveredNode !== null) {
+				console.log(context.selector.hoveredNode)
+				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
+			} else {
+				context.cursor.setTarget(pt);
+			}
+			
 			context.positioner.onFrame();
 		};
 
