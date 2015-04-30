@@ -1,6 +1,5 @@
 window.onload = function () {
 
-document.pipingContext = new PIPER.Context(document.getElementById("piping"))
-
+	document.pipingContext = new PIPER.Context(document.getElementById("piping"));
 
 }

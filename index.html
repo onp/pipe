@@ -11,6 +11,7 @@
     <!--[if IE 9]>    <script src="js-lib/typedarray.js"></script>    <![endif]-->
     
     <script src="js-lib/ieShims.js"></script>
+    <script src="js-lib/FileSaver.js"></script>
     <script src="js-lib/three.js"></script>
     <script src="js-lib/OrbitControls.js"></script>
     <script src="js/pipeData.js"></script>
@@ -27,6 +28,11 @@
 		<div class="mode-button circle-button" id="create-mode">C</div>
 		<div class="mode-button circle-button" id="draw-mode">D</div>
 	
+	</div>
+	
+	<div id="file-box">
+		<div id="save-file">Download Model</div>
+		<div ><label>Load File:</label><input type="file"  id="load-file"></div>
 	</div>
 	
 	<div id="view-options-box">
