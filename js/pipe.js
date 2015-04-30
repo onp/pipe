@@ -303,6 +303,50 @@
 
 		return cursor;
 	};
+	
+	////////////////////////////////////////////////////
+	// Selector
+
+	var SelectorFactory = function (context) {
+		var selector = {
+			selection: [],
+			hoveredPipe: null,
+			hoveredNode: null
+		};
+		
+		selector.updateHover = function (raycaster) {
+			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
+			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
+
+			if (selector.hoveredPipe !== null) {
+				selector.hoveredPipe.mesh.material.color.setHex(0x00ff00);
+			}
+
+			if (selector.hoveredNode !== null) {
+				selector.hoveredNode.mesh.material.color.setHex(0xff0000);
+			}
+
+			if (pipeIntersects.length > 0) {
+				pipeIntersects[0].object.material.color.setHex(0x0000ff);
+				selector.hoveredPipe = pipeIntersects[0].object.userData.owner;
+
+			} else {
+				selector.hoveredPipe = null;
+			}
+
+			if (nodeIntersects.length > 0) {
+				nodeIntersects[0].object.material.color.setHex(0x0000ff);
+				selector.hoveredNode = nodeIntersects[0].object.userData.owner;
+
+			} else {
+				selector.hoveredNode = null;
+			}
+		}
+	
+		
+		
+		return selector;
+	}
 
 	////////////////////////////////////////////////////
 	// Mode Manager
@@ -415,15 +459,15 @@
 
 		createMode.onClick = function (e) {
 			
-			if (createMode.hoveredNode !== null) {
+			if (context.selector.hoveredNode !== null) {
 				
-				console.log(createMode.hoveredNode);
-				createMode.hoveredNode.mesh.material.color.setHex(0xff0000);
-				context.drawMode.enter(createMode.hoveredNode);
+				console.log(context.selector.hoveredNode);
+				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
+				context.drawMode.enter(context.selector.hoveredNode);
 			
 			} else if (createMode.hoveredPipe !== null) {
 
-				console.log(createMode.hoveredPipe);
+				console.log(context.selector.hoveredPipe);
 				
 			} else {
 
@@ -447,33 +491,8 @@
 
 			var iPoint = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
 
-			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
-			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
-
-			if (createMode.hoveredPipe !== null) {
-				createMode.hoveredPipe.mesh.material.color.setHex(0x00ff00);
-			}
-
-			if (createMode.hoveredNode !== null) {
-				createMode.hoveredNode.mesh.material.color.setHex(0xff0000);
-			}
-
-			if (pipeIntersects.length > 0) {
-				pipeIntersects[0].object.material.color.setHex(0x0000ff);
-				createMode.hoveredPipe = pipeIntersects[0].object.userData.owner;
-
-			} else {
-				createMode.hoveredPipe = null;
-			}
-
-			if (nodeIntersects.length > 0) {
-				nodeIntersects[0].object.material.color.setHex(0x0000ff);
-				createMode.hoveredNode = nodeIntersects[0].object.userData.owner;
-
-			} else {
-				createMode.hoveredNode = null;
-			}
-
+			context.selector.updateHover(raycaster)
+			
 			context.cursor.setTarget(iPoint);
 			context.positioner.onFrame();
 
@@ -542,12 +561,22 @@
 		};
 
 		drawMode.onClick = function (e) {
+			
+			var newNode;
+			
+			if (context.selector.hoveredNode !== null) {
+				
+				console.log(context.selector.hoveredNode);
+				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
+				newNode = context.selector.hoveredNode;
+			
+			} else {
 
-			var newNode = new PIPER.Node(context.cursor.target.clone());
-
-			context.model.nodes[newNode.uuid] = newNode;
-
-			context.visibleNodes.add(newNode.makeMesh());
+				newNode = new PIPER.Node(context.cursor.target.clone());
+				context.model.nodes[newNode.uuid] = newNode;
+				context.visibleNodes.add(newNode.makeMesh());
+				
+			}
 
 			context.cursor.setStart();
 
@@ -565,6 +594,8 @@
 
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
+			
+			context.selector.updateHover(raycaster);
 
 			var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 
@@ -592,6 +623,10 @@
 		};
 
 		viewMode.enter = function () {
+			if (context.mode && (context.mode.name != "view")) {
+				context.previousMode = context.mode;
+				context.mode.suspend();
+			}
 
 			context.mode = viewMode;
 			this.state = "on";
@@ -626,15 +661,11 @@
 	var SelectModeFactory = function (context) {
 
 		var selectMode = {
-			name: "view",
+			name: "select",
 			state: "off"
 		};
 
 		selectMode.enter = function () {
-			if (context.mode && (context.mode.name != "view")) {
-				context.previousMode = context.mode;
-				context.mode.suspend();
-			}
 
 			context.mode = selectMode;
 			this.state = "on";
@@ -642,11 +673,13 @@
 			context.modeManager.update();
 		};
 
-		selectMode.leave = function () {
-			if (context.previousMode) {
-				context.previousMode.resume();
-			}
+		selectMode.leave = function (fromBaseMode) {
 			this.state = "off";
+			context.cursor.setStart();
+
+			if (!fromBaseMode) {
+				context.createMode.enter();
+			}
 		};
 
 		selectMode.onClick = function () {};
@@ -679,6 +712,7 @@
 		this.mode = undefined;
 		this.previousMode = undefined;
 		this.cursor = CursorFactory(this);
+		this.selector = SelectorFactory(this);
 		this.model = new PIPER.Model();
 
 		this.mouseState = {x: 0, y: 0, right: false, left: false};
