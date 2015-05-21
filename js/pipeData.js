@@ -19,22 +19,21 @@
 	// Model //////////////////////////////////////////////////
 
 	PIPER.Model = function () {
-		this.pipes = [];
+		this.pipes = {};
 		this.nodes = {};
 	};
 
 	PIPER.Model.prototype = {
 
 		toJSON: function () {
-
+			var id;
+			
 			var pipeJSON = [];
-			var i, id;
-
-			for (i = 0; i < this.pipes.length; i++) {
-				pipeJSON.push(this.pipes[i].toJSON());
-			}
-
 			var nodeJSON = [];
+
+			for (id in this.pipes) {
+				pipeJSON.push(this.pipes[id].toJSON());
+			}
 
 			for (id in this.nodes) {
 				nodeJSON.push(this.nodes[id].toJSON());
@@ -81,7 +80,7 @@
 					pipeData.uuid
 				);
 
-				this.pipes.push(newPipe);
+				this.pipes[pipeData.uuid] = newPipe;
 
 			}
 
@@ -90,8 +89,8 @@
 
 		clear: function () {
 
-			this.nodes = [];
-			this.pipes = [];
+			this.nodes = {};
+			this.pipes = {};
 
 		}
 
@@ -105,6 +104,7 @@
 		this.diameter1 = diameter1 || defaultDiameter;
 		this.diameter2 = diameter2 || diameter1 || defaultDiameter;
 		this.uuid = uuid || THREE.Math.generateUUID();
+		this.color = 0x00ff00;
 
 	};
 
@@ -154,8 +154,8 @@
 	PIPER.Node = function (position, uuid) {
 
 		this.position = position;
-
 		this.uuid = uuid || THREE.Math.generateUUID();
+		this.color = 0xff0000;
 
 	};
 
