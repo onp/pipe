@@ -488,13 +488,10 @@
 			
 			if (context.selector.hoveredNode !== null) {
 				
-				console.log(context.selector.hoveredNode);
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				context.drawMode.enter(context.selector.hoveredNode);
 			
 			} else if (context.selector.hoveredPipe !== null) {
-
-				console.log(context.selector.hoveredPipe);
 				
 			} else {
 
@@ -591,7 +588,6 @@
 			
 			if (context.selector.hoveredNode !== null) {
 				
-				console.log(context.selector.hoveredNode);
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				newNode = context.selector.hoveredNode;
 			
@@ -605,7 +601,8 @@
 
 			context.cursor.setStart();
 
-			var newPipe = new PIPER.Segment(sourceNode, newNode);
+			var d = context.positioner.positionSpecs.diameter;
+			var newPipe = new PIPER.Segment(sourceNode, newNode,d,d);
 			context.model.pipes[newPipe.uuid] = newPipe;
 
 			context.visiblePipes.add(newPipe.makeMesh());
@@ -619,19 +616,18 @@
 
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
-			
+
 			context.selector.updateHover(raycaster);
 
-			var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
-
 			if (context.selector.hoveredNode !== null) {
-				console.log(context.selector.hoveredNode)
 				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
 			} else {
+				var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 				context.cursor.setTarget(pt);
 			}
-			
+
 			context.positioner.onFrame();
+
 		};
 
 		drawMode.onKeyDown = function (e) {
@@ -878,9 +874,7 @@
 
 				ctex.ctrlOtarget.position.copy(ctex.controlsO.target);
 				ctex.ctrlPtarget.position.copy(ctex.controlsP.target);
-
 				renderer.render(ctex.scene, ctex.camera);
-
 				requestAnimationFrame(rdr);
 			};
 

@@ -9,11 +9,6 @@
 
 	var nodeGeometry = new THREE.SphereGeometry(defaultDiameter);
 	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-
-	var segmentGeometry = new THREE.CylinderGeometry(defaultDiameter, defaultDiameter, 1);
-	var cTrans = new THREE.Matrix4();
-	segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-	segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
 	var segmentMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
 
 	// Model //////////////////////////////////////////////////
@@ -117,6 +112,11 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
+				var segmentGeometry = new THREE.CylinderGeometry(this.diameter1, this.diameter2, 1);
+				var cTrans = new THREE.Matrix4()
+				segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
+				segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+				
 				this.mesh = new THREE.Mesh(segmentGeometry, segmentMaterial.clone());
 				this.mesh.position.copy(this.node1.position);
 				this.mesh.scale.set(1, 1, this.node2.position.clone().sub(this.node1.position).length());
