@@ -266,10 +266,7 @@
 
 		cursor.setTarget = function (pos) {
 			cursor.node.mesh.position.copy(pos);
-
-			if (cursor.start !== undefined) {
-				cursor.update();
-			}
+			cursor.update();
 		};
 
 		cursor.setStart = function (pos) {
@@ -294,6 +291,11 @@
 
 		cursor.update = function () {
 			if (cursor.start === undefined) { return; }
+			if (cursor.start.equals(cursor.target)) {
+				cursor.hide();
+			}else{
+				cursor.show();
+			}
 
 			cursor.segment.mesh.scale.set(1, 1, cursor.target.clone().sub(cursor.start).length());
 			cursor.segment.mesh.lookAt(cursor.target);
