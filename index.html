@@ -27,12 +27,13 @@
 		<div class="mode-button circle-button" id="view-mode">V</div>
 		<div class="mode-button circle-button" id="create-mode">C</div>
 		<div class="mode-button circle-button" id="draw-mode">D</div>
+		<div class="mode-button circle-button" id="select-mode">S</div>
 	
 	</div>
 	
 	<div id="file-box">
 		<div id="save-file">Download Model</div>
-		<div ><label>Load File:</label><input type="file"  id="load-file"></div>
+		<div ><label>Load File:<input type="file"  id="load-file"></label></div>
 	</div>
 	
 	<div id="view-options-box">
@@ -44,43 +45,48 @@
             <p>Position</p>
             <div class="y-box">
 				<span class="activator"></span>
-                <input type="text" id="y-pos"></input>
-                <span type="label">ELEVATION</span>
+                <input type="text" id="y-pos">
+                <label for="y-pos">ELEVATION</label>
             </div>
             <div class="x-box">
 				<span class="activator"></span>
-                <input type="text" id="x-pos"></input>
-                <span type="label">NORTH</span>
+                <input type="text" id="x-pos">
+                <label for="x-pos">NORTH</label>
             </div>
             <div class="z-box">
 				<span class="activator"></span>
-                <input type="text" id="z-pos"></input>
-                <span type="label">EAST</span>
+                <input type="text" id="z-pos">
+                <label for="z-pos">EAST</label>
             </div>
         </div>
         <div id="delta-box"class="menu-group">
             <p>Delta</p>
             <div class="y-box">
 				<span class="activator"></span>
-                <input type="text" id="y-delta"></input>
-                <span type="label">ELEVATION</span>
+                <input type="text" id="y-delta">
+                <label for="y-delta">ELEVATION</label>
             </div>
             <div class="x-box">
 				<span class="activator"></span>
                 <input type="text" id="x-delta"></input>
-                <span type="label">NORTH</span>
+                <label for="x-delta">NORTH</label>
             </div>
             <div class="z-box">
 				<span class="activator"></span>
-                <input type="text" id="z-delta"></input>
-                <span type="label">EAST</span>
+                <input type="text" id="z-delta">
+                <label for="z-delta">EAST</label>
             </div>
             <div class="l-box">
 				<span class="activator"></span>
-                <input type="text" id="l-delta"></input>
-                <span type="label">LENGTH</span>
+                <input type="text" id="l-delta">
+                <label for="l-delta">LENGTH</label>
             </div>
+			<div class="d1-box">
+				<input type="text" id="diameter">
+				<label for="diam1">DIAMETER</label>
+			</div>
         </div>
+		
     </div>
 
 </body>

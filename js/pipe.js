@@ -24,6 +24,7 @@
 
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
+		var diamElem = document.getElementById("diameter")
 
 		var i;
 
@@ -181,6 +182,20 @@
 				false);
 
 		}
+		
+		diamElem.addEventListener("input",
+			function(e){
+				var diam = diamElem.value
+				positioner.positionSpecs.diameter = diam
+				
+				var newGeom = new THREE.CylinderGeometry(diam, diam, 1);
+				var cTrans = new THREE.Matrix4();
+				newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
+				newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+				context.cursor.segment.mesh.geometry = newGeom;
+			},
+			false
+		)
 
 
 
@@ -251,10 +266,7 @@
 
 		cursor.setTarget = function (pos) {
 			cursor.node.mesh.position.copy(pos);
-
-			if (cursor.start !== undefined) {
-				cursor.update();
-			}
+			cursor.update();
 		};
 
 		cursor.setStart = function (pos) {
@@ -279,6 +291,11 @@
 
 		cursor.update = function () {
 			if (cursor.start === undefined) { return; }
+			if (cursor.start.equals(cursor.target)) {
+				cursor.hide();
+			}else{
+				cursor.show();
+			}
 
 			cursor.segment.mesh.scale.set(1, 1, cursor.target.clone().sub(cursor.start).length());
 			cursor.segment.mesh.lookAt(cursor.target);
@@ -318,25 +335,39 @@
 			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
 			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
 
+			// clear existing hovers
+			
 			if (selector.hoveredPipe !== null) {
-				selector.hoveredPipe.mesh.material.color.setHex(0x00ff00);
+				if (selector.hoveredPipe.mesh.material.color.getHex() == 0x0000ff) {
+					selector.hoveredPipe.mesh.material.color.setHex(selector.hoveredPipe.color);
+				}
 			}
 
 			if (selector.hoveredNode !== null) {
-				selector.hoveredNode.mesh.material.color.setHex(0xff0000);
+				if (selector.hoveredNode.mesh.material.color.getHex() == 0x0000ff) {
+					selector.hoveredNode.mesh.material.color.setHex(selector.hoveredNode.color);
+				}
 			}
+			
+			// color new hovers
 
 			if (pipeIntersects.length > 0) {
-				pipeIntersects[0].object.material.color.setHex(0x0000ff);
+				
 				selector.hoveredPipe = pipeIntersects[0].object.userData.owner;
+				if (selector.hoveredPipe.color == selector.hoveredPipe.mesh.material.color.getHex()) {
+					pipeIntersects[0].object.material.color.setHex(0x0000ff);
+				}
 
 			} else {
 				selector.hoveredPipe = null;
 			}
 
 			if (nodeIntersects.length > 0) {
-				nodeIntersects[0].object.material.color.setHex(0x0000ff);
+				
 				selector.hoveredNode = nodeIntersects[0].object.userData.owner;
+				if (selector.hoveredNode.color == selector.hoveredNode.mesh.material.color.getHex()) {
+					nodeIntersects[0].object.material.color.setHex(0x0000ff);
+				}
 
 			} else {
 				selector.hoveredNode = null;
@@ -417,9 +448,7 @@
 	var CreateModeFactory = function (context) {
 		var createMode = {
 			name: "create",
-			state: "off",
-			hoveredPipe: null,
-			hoveredNode: null
+			state: "off"
 		};
 
 		createMode.enter = function () {
@@ -461,13 +490,10 @@
 			
 			if (context.selector.hoveredNode !== null) {
 				
-				console.log(context.selector.hoveredNode);
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				context.drawMode.enter(context.selector.hoveredNode);
 			
-			} else if (createMode.hoveredPipe !== null) {
-
-				console.log(context.selector.hoveredPipe);
+			} else if (context.selector.hoveredPipe !== null) {
 				
 			} else {
 
@@ -512,9 +538,7 @@
 	var DrawModeFactory = function (context) {
 		var drawMode = {
 			name: "draw",
-			state: "off",
-			hoveredPipe: null,
-			hoveredNode: null
+			state: "off"
 		};
 
 		var sourceNode; // basisPoint
@@ -566,7 +590,6 @@
 			
 			if (context.selector.hoveredNode !== null) {
 				
-				console.log(context.selector.hoveredNode);
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				newNode = context.selector.hoveredNode;
 			
@@ -580,8 +603,9 @@
 
 			context.cursor.setStart();
 
-			var newPipe = new PIPER.Segment(sourceNode, newNode);
-			context.model.pipes.push(newPipe);
+			var d = context.positioner.positionSpecs.diameter;
+			var newPipe = new PIPER.Segment(sourceNode, newNode,d,d);
+			context.model.pipes[newPipe.uuid] = newPipe;
 
 			context.visiblePipes.add(newPipe.makeMesh());
 
@@ -594,19 +618,18 @@
 
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
-			
+
 			context.selector.updateHover(raycaster);
 
-			var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
-
 			if (context.selector.hoveredNode !== null) {
-				console.log(context.selector.hoveredNode)
 				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
 			} else {
+				var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 				context.cursor.setTarget(pt);
 			}
-			
+
 			context.positioner.onFrame();
+
 		};
 
 		drawMode.onKeyDown = function (e) {
@@ -668,11 +691,17 @@
 
 		var selectMode = {
 			name: "select",
-			state: "off"
+			state: "off",
+			nodes: [],
+			pipes: []
 		};
 
 		selectMode.enter = function () {
 
+			if (context.mode) {
+				context.mode.leave(true);
+			}
+			
 			context.mode = selectMode;
 			this.state = "on";
 
@@ -688,11 +717,62 @@
 			}
 		};
 
-		selectMode.onClick = function () {};
+		selectMode.onClick = function () {
+			
+			var i;
+			
+			if (context.selector.hoveredNode !== null) {
+				
+				context.selector.hoveredNode.mesh.material.color.setHex(0xff00ff);
+				if (selectMode.nodes.indexOf(context.selector.hoveredNode) == -1){
+					selectMode.nodes.push(context.selector.hoveredNode)
+				}
+			
+			} else if (context.selector.hoveredPipe !== null) {
+			
+				context.selector.hoveredPipe.mesh.material.color.setHex(0xff00ff);
+				if (selectMode.pipes.indexOf(context.selector.hoveredPipe) == -1) {
+					selectMode.pipes.push(context.selector.hoveredPipe);
+				}
+				
+			} else {
+				
+				for (i = 0; i<selectMode.nodes.length; i++){
+					selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color)
+				}
+				for (i = 0; i<selectMode.pipes.length; i++){
+					selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color)
+				}
+				selectMode.nodes = []
+				selectMode.pipes = []
+			}
+			
+		};
 
-		selectMode.onKeyDown = function () {};
+		selectMode.onKeyDown  = function (e) {
+			if (e.keyCode == 46 || e.keyCode == 8) {
+				var i;
+				for (i = 0; i<selectMode.nodes.length; i++){
+					context.visibleNodes.remove(selectMode.nodes[i].mesh);
+					delete context.model.nodes[selectMode.nodes[i].uuid];
+				}
+				for (i = 0; i<selectMode.pipes.length; i++){
+					context.visiblePipes.remove(selectMode.pipes[i].mesh);
+					delete context.model.pipes[selectMode.pipes[i].uuid];
+				}
+				selectMode.nodes = [];
+				selectMode.pipes = [];
+			} 
+		};
 
-		selectMode.onFrame = function () {};
+		selectMode.onFrame = function () {
+			var mouseVector = new THREE.Vector3(context.mouseState.ndcX, context.mouseState.ndcY, 0);
+
+			var raycaster = new THREE.Raycaster();
+			raycaster.setFromCamera(mouseVector.clone(), context.camera);
+			
+			context.selector.updateHover(raycaster);
+		};
 
 		return selectMode;
 
@@ -728,10 +808,12 @@
 		this.createMode = CreateModeFactory(this);
 		this.drawMode = DrawModeFactory(this);
 		this.viewMode = ViewModeFactory(this);
+		this.selectMode = SelectModeFactory(this);
 
 		this.modeManager.addMode(this.createMode, document.getElementById("create-mode"), 67);
 		this.modeManager.addMode(this.drawMode, document.getElementById("draw-mode"), 68);
 		this.modeManager.addMode(this.viewMode, document.getElementById("view-mode"), 86);
+		this.modeManager.addMode(this.selectMode, document.getElementById("select-mode"), 83);
 
 		var ctx = this;
 		this.ctx = this;
@@ -794,9 +876,7 @@
 
 				ctex.ctrlOtarget.position.copy(ctex.controlsO.target);
 				ctex.ctrlPtarget.position.copy(ctex.controlsP.target);
-
 				renderer.render(ctex.scene, ctex.camera);
-
 				requestAnimationFrame(rdr);
 			};
 
@@ -956,19 +1036,19 @@
 
 		rebuildFromModel: function () {
 
-			var i, nodeID;
+			var id;
 
 			this.clearDisplayElements();
 
 			var nodes = this.model.nodes;
 			var pipes = this.model.pipes;
 
-			for (nodeID in nodes) {
-				this.visibleNodes.add(nodes[nodeID].makeMesh());
+			for (id in nodes) {
+				this.visibleNodes.add(nodes[id].makeMesh());
 			}
 
-			for (i = 0; i < pipes.length; i++) {
-				this.visiblePipes.add(pipes[i].makeMesh());
+			for (id in pipes) {
+				this.visiblePipes.add(pipes[id].makeMesh());
 			}
 		},
 

@@ -9,32 +9,26 @@
 
 	var nodeGeometry = new THREE.SphereGeometry(defaultDiameter);
 	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-
-	var segmentGeometry = new THREE.CylinderGeometry(defaultDiameter, defaultDiameter, 1);
-	var cTrans = new THREE.Matrix4();
-	segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-	segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
 	var segmentMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
 
 	// Model //////////////////////////////////////////////////
 
 	PIPER.Model = function () {
-		this.pipes = [];
+		this.pipes = {};
 		this.nodes = {};
 	};
 
 	PIPER.Model.prototype = {
 
 		toJSON: function () {
-
+			var id;
+			
 			var pipeJSON = [];
-			var i, id;
-
-			for (i = 0; i < this.pipes.length; i++) {
-				pipeJSON.push(this.pipes[i].toJSON());
-			}
-
 			var nodeJSON = [];
+
+			for (id in this.pipes) {
+				pipeJSON.push(this.pipes[id].toJSON());
+			}
 
 			for (id in this.nodes) {
 				nodeJSON.push(this.nodes[id].toJSON());
@@ -81,7 +75,7 @@
 					pipeData.uuid
 				);
 
-				this.pipes.push(newPipe);
+				this.pipes[pipeData.uuid] = newPipe;
 
 			}
 
@@ -90,8 +84,8 @@
 
 		clear: function () {
 
-			this.nodes = [];
-			this.pipes = [];
+			this.nodes = {};
+			this.pipes = {};
 
 		}
 
@@ -105,6 +99,7 @@
 		this.diameter1 = diameter1 || defaultDiameter;
 		this.diameter2 = diameter2 || diameter1 || defaultDiameter;
 		this.uuid = uuid || THREE.Math.generateUUID();
+		this.color = 0x00ff00;
 
 	};
 
@@ -117,6 +112,11 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
+				var segmentGeometry = new THREE.CylinderGeometry(this.diameter1, this.diameter2, 1);
+				var cTrans = new THREE.Matrix4()
+				segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
+				segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+				
 				this.mesh = new THREE.Mesh(segmentGeometry, segmentMaterial.clone());
 				this.mesh.position.copy(this.node1.position);
 				this.mesh.scale.set(1, 1, this.node2.position.clone().sub(this.node1.position).length());
@@ -154,8 +154,8 @@
 	PIPER.Node = function (position, uuid) {
 
 		this.position = position;
-
 		this.uuid = uuid || THREE.Math.generateUUID();
+		this.color = 0xff0000;
 
 	};
 

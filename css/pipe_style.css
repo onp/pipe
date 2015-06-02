@@ -136,6 +136,10 @@ div#mode-box{
 	content: "Draw mode";
 }
 
+#select-mode:hover::after{
+	content: "Select mode";
+}
+
 /* file box */
 /*=========================================*/
 
@@ -146,11 +150,6 @@ div#file-box{
 	box-shadow: 10px 5px 10px grey;
 	background-color:white;
 	padding:5px;
-}
-
-#file-box label{
-	display:inline-block;
-	width:5em;
 }
 
 #save-file{
