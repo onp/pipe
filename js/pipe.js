@@ -393,9 +393,9 @@
 		var toggleMode = function (mode) {
 			if (mode.state != "on") {
 				mode.enter();
-			} else {
-				mode.leave();
-			}
+			} //else {
+			//	mode.leave();
+			//}
 			modeManager.update();
 		};
 
@@ -453,7 +453,7 @@
 
 		createMode.enter = function () {
 			if (context.mode) {
-				context.mode.leave(true);
+				context.mode.leave();
 			}
 
 			context.mode = createMode;
@@ -463,27 +463,14 @@
 			context.positioner.positionSpecs.y = 0;
 
 			context.cursor.show();
+			context.positioner.show();
 			context.modeManager.update();
 		};
 
-		createMode.leave = function (fromBaseMode) {
-			context.mode = undefined;
+		createMode.leave = function () {
 			this.state = "off";
+			context.mode = undefined;
 			context.cursor.hide();
-
-			if (!fromBaseMode) {
-				context.createMode.enter();
-			}
-		};
-
-		createMode.suspend = function () {
-			this.state = "suspend";
-			context.cursor.hide();
-		};
-
-		createMode.resume = function () {
-			context.mode = createMode;
-			context.cursor.show();
 		};
 
 		createMode.onClick = function (e) {
@@ -525,7 +512,9 @@
 		};
 
 		createMode.onKeyDown = function (e) {
-			return;
+			if (e.keyCode == 27) {
+				context.viewMode.enter();
+			}
 		};
 
 		return createMode;
@@ -545,7 +534,7 @@
 
 		drawMode.enter = function (currNode) {
 			if (context.mode) {
-				context.mode.leave(true);
+				context.mode.leave();
 			}
 
 			if (!currNode) {
@@ -562,26 +551,15 @@
 
 			context.cursor.setStart(sourceNode.mesh.position.clone());
 			context.cursor.show();
+			context.positioner.show();
 			context.modeManager.update();
 		};
 
-		drawMode.suspend = function () {
-			this.state = "suspend";
-			context.cursor.hide();
-		};
-
-		drawMode.leave = function (fromBaseMode) {
+		drawMode.leave = function () {
 			this.state = "off";
+			context.mode = undefined;
 			context.cursor.setStart();
-
-			if (!fromBaseMode) {
-				context.createMode.enter();
-			}
-		};
-
-		drawMode.resume = function () {
-			context.mode = drawMode;
-			context.cursor.show();
+			context.cursor.hide();
 		};
 
 		drawMode.onClick = function (e) {
@@ -634,7 +612,7 @@
 
 		drawMode.onKeyDown = function (e) {
 			if (e.keyCode == 27) {
-				drawMode.leave();
+				context.viewMode.enter();
 			}
 		};
 
@@ -652,24 +630,22 @@
 		};
 
 		viewMode.enter = function () {
-			if (context.mode && (context.mode.name != "view")) {
-				context.previousMode = context.mode;
-				context.mode.suspend();
+			if (context.mode) {
+				context.mode.leave();
 			}
-
+			
 			context.mode = viewMode;
 			this.state = "on";
 
 			context.controlsO.enabled = true;
 			context.controlsP.enabled = true;
+			context.positioner.hide();
 			context.modeManager.update();
 		};
 
 		viewMode.leave = function () {
-			if (context.previousMode) {
-				context.previousMode.resume();
-			}
 			this.state = "off";
+			context.mode = undefined;
 			context.controlsO.enabled = false;
 			context.controlsP.enabled = false;
 		};
@@ -704,17 +680,14 @@
 			
 			context.mode = selectMode;
 			this.state = "on";
-
+			
+			context.positioner.hide();
 			context.modeManager.update();
 		};
 
-		selectMode.leave = function (fromBaseMode) {
+		selectMode.leave = function () {
 			this.state = "off";
-			context.cursor.setStart();
-
-			if (!fromBaseMode) {
-				context.createMode.enter();
-			}
+			context.mode = undefined;
 		};
 
 		selectMode.onClick = function () {
@@ -796,7 +769,7 @@
 		this.camera = this.cameraO;
 
 		this.mode = undefined;
-		this.previousMode = undefined;
+		//this.previousMode = undefined;
 		this.cursor = CursorFactory(this);
 		this.selector = SelectorFactory(this);
 		this.model = new PIPER.Model();
@@ -933,8 +906,7 @@
 
 		this.initializeScene();
 		this.onResize();
-		this.createMode.enter();
-		this.positioner.show();
+		this.viewMode.enter();
 		this.modeManager.update();
 		render(this);
 
