@@ -335,10 +335,7 @@
 			hoveredNode: null
 		};
 		
-		selector.updateHover = function (raycaster) {
-			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
-			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
-
+		selector.clearHovers = function (){
 			// clear existing hovers
 			
 			if (selector.hoveredPipe !== null) {
@@ -352,6 +349,13 @@
 					selector.hoveredNode.mesh.material.color.setHex(selector.hoveredNode.color);
 				}
 			}
+		}
+		
+		selector.updateHover = function (raycaster) {
+			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
+			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
+
+			selector.clearHovers()
 			
 			// color new hovers
 
@@ -659,6 +663,7 @@
 			context.controlsO.enabled = true;
 			context.controlsP.enabled = true;
 			context.positioner.hide();
+			context.selector.clearHovers();
 			context.modeManager.update();
 		};
 
@@ -711,6 +716,7 @@
 		};
 
 		selectMode.leave = function () {
+			selectMode.clearSelection();
 			this.state = "off";
 			context.mode = undefined;
 		};
@@ -793,7 +799,9 @@
 		selectMode.onKeyDown  = function (e) {
 			if (e.keyCode == 46 || e.keyCode == 8) {
 				selectMode.clearSelection(true)
-			} 
+			} else if (e.keyCode == 27) {
+				context.viewMode.enter();
+			}
 		};
 
 		selectMode.onFrame = function () {
