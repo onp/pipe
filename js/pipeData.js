@@ -127,6 +127,12 @@
 			return this.mesh;
 
 		},
+		
+		length: function () {
+			var diff = new THREE.Vector3()
+			diff.subVectors(this.node1.position,this.node2.position)
+			return Math.abs(diff.length())
+		},
 
 		hide: function () {
 

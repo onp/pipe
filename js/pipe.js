@@ -25,6 +25,7 @@
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
 		var diamElem = document.getElementById("diameter")
+		positioner.lengthElem = deltaElems[3];
 
 		var i;
 
@@ -42,6 +43,10 @@
 		}
 
 		displayElement.addEventListener("click", function (e) {
+			e.stopPropagation();
+		}, false);
+		
+		displayElement.addEventListener("keydown", function (e) {
 			e.stopPropagation();
 		}, false);
 
@@ -70,7 +75,6 @@
 
 		var onFocusGenerator = function (dim, elem) {
 			var onFocus = function (e) {
-
 				if (positionSpecs[dim]) {	return false;	}
 
 				if (dim != "l") {
@@ -599,7 +603,7 @@
 
 			context.selector.updateHover(raycaster);
 
-			if (context.selector.hoveredNode !== null) {
+			if ((context.selector.hoveredNode !== null) && (context.selector.hoveredNode !== sourceNode)) {
 				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
 			} else {
 				var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
@@ -611,8 +615,23 @@
 		};
 
 		drawMode.onKeyDown = function (e) {
-			if (e.keyCode == 27) {
+			var k = e.keyCode;
+			if (k == 27) {
 				context.viewMode.enter();
+			} else {
+				var le = context.positioner.lengthElem
+				if (document.activeElement === le) {
+					return
+				}
+				if (k >= 96 && k <= 105) {
+					k -= 48;  //make numpad and main numkey values match
+				}
+				if (k >= 48 && k <= 57 || k == 32 || k == 222) {
+					le.focus()
+					le.dispatchEvent(new Event('Focus'))
+					le.value = ""
+					
+				}
 			}
 		};
 
@@ -671,6 +690,12 @@
 			nodes: [],
 			pipes: []
 		};
+		
+				
+		selectMode.elem = document.getElementById("selected-objects");
+		selectMode.pElem = document.getElementById("selected-pipes");
+		selectMode.nElem = document.getElementById("selected-nodes");
+		
 
 		selectMode.enter = function () {
 
@@ -689,6 +714,56 @@
 			this.state = "off";
 			context.mode = undefined;
 		};
+		
+		selectMode.addNode = function (sNode) {
+			var elem = document.createElement("div");
+			elem.classList.add("obj")
+			elem.innerHTML = "<span>" +
+							sNode.uuid.slice(0,8) + "</span><span>" + 
+							PIPER.Calc.formatLength(sNode.position.x) + "</span><span>" +
+							PIPER.Calc.formatLength(sNode.position.y) + "</span><span>" +
+							PIPER.Calc.formatLength(sNode.position.z) + "</span>";
+			selectMode.nElem.appendChild(elem)
+			selectMode.nodes.push(sNode)
+		}
+		
+		selectMode.addPipe = function (sPipe) {
+			var elem = document.createElement("div");
+			elem.classList.add("obj")
+			elem.innerHTML = "<span>" + 
+							sPipe.uuid.slice(0,8) + "</span><span>" +
+							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
+							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
+							sPipe.length() + "</span>";
+			selectMode.pElem.appendChild(elem)
+			selectMode.pipes.push(sPipe)
+		}
+		
+		selectMode.clearSelection = function(deleteSelected) {
+			var i;
+			if (!deleteSelected){
+				for (i = 0; i<selectMode.nodes.length; i++){
+					selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color)
+				}
+				for (i = 0; i<selectMode.pipes.length; i++){
+					selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color)
+				}
+			} else {
+				for (i = 0; i<selectMode.nodes.length; i++){
+					context.visibleNodes.remove(selectMode.nodes[i].mesh);
+					delete context.model.nodes[selectMode.nodes[i].uuid];
+				}
+				for (i = 0; i<selectMode.pipes.length; i++){
+					context.visiblePipes.remove(selectMode.pipes[i].mesh);
+					delete context.model.pipes[selectMode.pipes[i].uuid];
+				}
+			}
+			
+			selectMode.elem.innerHTML = "";
+			
+			selectMode.nodes = []
+			selectMode.pipes = []
+		}
 
 		selectMode.onClick = function () {
 			
@@ -698,43 +773,26 @@
 				
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff00ff);
 				if (selectMode.nodes.indexOf(context.selector.hoveredNode) == -1){
-					selectMode.nodes.push(context.selector.hoveredNode)
+					selectMode.addNode(context.selector.hoveredNode)
 				}
 			
 			} else if (context.selector.hoveredPipe !== null) {
 			
 				context.selector.hoveredPipe.mesh.material.color.setHex(0xff00ff);
 				if (selectMode.pipes.indexOf(context.selector.hoveredPipe) == -1) {
-					selectMode.pipes.push(context.selector.hoveredPipe);
+					selectMode.addPipe(context.selector.hoveredPipe);
 				}
 				
 			} else {
-				
-				for (i = 0; i<selectMode.nodes.length; i++){
-					selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color)
-				}
-				for (i = 0; i<selectMode.pipes.length; i++){
-					selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color)
-				}
-				selectMode.nodes = []
-				selectMode.pipes = []
+
+				selectMode.clearSelection()
 			}
 			
 		};
 
 		selectMode.onKeyDown  = function (e) {
 			if (e.keyCode == 46 || e.keyCode == 8) {
-				var i;
-				for (i = 0; i<selectMode.nodes.length; i++){
-					context.visibleNodes.remove(selectMode.nodes[i].mesh);
-					delete context.model.nodes[selectMode.nodes[i].uuid];
-				}
-				for (i = 0; i<selectMode.pipes.length; i++){
-					context.visiblePipes.remove(selectMode.pipes[i].mesh);
-					delete context.model.pipes[selectMode.pipes[i].uuid];
-				}
-				selectMode.nodes = [];
-				selectMode.pipes = [];
+				selectMode.clearSelection(true)
 			} 
 		};
 

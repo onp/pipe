@@ -20,6 +20,19 @@ body{
 /* menu box */
 /*=========================================*/
 
+div#selected-objects{
+    position:absolute;
+    right:20px;
+    top:20px;
+}
+
+div#selected-objects div.obj{
+	display:flex;
+	justify-content: space-between;
+	width:500px;
+}
+
+
 div#menu-box{
     position:absolute;
     right:20px;
