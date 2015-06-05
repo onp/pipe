@@ -17,7 +17,7 @@ body{
 	height:100%;
 }
 
-/* menu box */
+/* selected objects */
 /*=========================================*/
 
 div#selected-objects{
@@ -32,6 +32,18 @@ div#selected-objects div.obj{
 	width:500px;
 }
 
+/* bottom right */
+/*=========================================*/
+
+div#bottom-right{
+    position:absolute;
+    right:20px;
+    bottom:20px;
+}
+
+
+/* menu box */
+/*=========================================*/
 
 div#menu-box{
     position:absolute;
@@ -177,18 +189,4 @@ div#file-box{
 
 #load-file{
 	padding: 5px;
-}
-
-/* view box */
-/*=========================================*/
-
-div#view-options-box{
-	position:absolute;
-    left:20px;
-    top:50%;
-	transform:translateY(-50%);
-}
-
-#camera-toggle:hover::after{
-	content:"Toggle camera";
 }
