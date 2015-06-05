@@ -12,16 +12,112 @@
 		}
 		return [x, y];
 	};
+	
+
+	CALC.parseFeetInches = function ( fi ) {
+		//parses a string as feet and inches, returns meters
+		
+		var fiRE = /(?:^(\d*)(?!(?:"|(?:[\s-](?:\d+)\/(?:\d+)")))'?)?(?:(?:[\s-]?(\d*))?(?:[\s-](\d+)\/(\d+))?"?)?$/g;
+
+		var matched = fiRE.exec(fi);
+
+		var feet, meters;
+
+		if ( matched ) {
+			if (matched[4] == undefined) {
+
+				matched[4] = 1
+
+			};
+
+			for (var i=1; i<matched.length; i++) {
+				console.log(matched[i])
+				if ( matched[i] === undefined ) {
+					matched[i] = 0;
+				}
+				matched[i] = Number(matched[i]);
+				console.log(matched[i])
+			};
+
+			feet = matched[1]+(matched[2]+matched[3]/matched[4])/12;
+			meters = feet*0.3048;
+		}
+
+		return meters;
+	}
+
+	CALC.toFeetInches = function ( m ) {
+		//takes a number of meters, returns  a formatted string in feet and inches.
+		
+		if ( m == 0 ) {
+
+			return 0;
+
+		}
+
+		var feet,inches,numerator,denominator,remInches;
+
+		feet = ~~(m/0.3048);
+		remInches = (m-feet*0.3048)/0.0254;
+		inches = ~~(remInches);
+		remInches = remInches - inches;
+
+		for ( denominator = 2; denominator<32; denominator*=2) {
+			numerator = Math.round(remInches*denominator);
+
+			if ( (1/32)> Math.abs(remInches-numerator/denominator )) {
+				break
+			};
+			
+		}
+
+		if ( numerator == 0 ) {
+			
+			return feet + "' " + inches + '"'
+
+		} else if ( numerator == denominator ){
+
+			inches++
+
+			return feet + "' " + inches + '"'
+
+		} else {
+		
+			return feet+"' "+inches+" "+numerator+"/"+denominator + '"'
+
+		}
+	}
+	
 
 	CALC.parseLength = function (l, unit) {
-		if (!isNaN(Number(l))) {
-			return Number(l);
+		// accepts length as string, interprets as "unit"
+		// valid units are "fi" (feet and inches) and "m" (meters)
+		// returns undefined if l is not a valid input.
+		if (unit === undefined) { unit = "m"}
+		
+		if (unit == "fi") {
+			return CALC.parseFeetInches(l)
+		} else if (unit == "m"){
+			if (!isNaN(Number(l))) {
+				return Number(l);
+			}
 		}
 	};
 
 	CALC.formatLength = function (l, unit) {
-		if (Math.abs(l) < 0.001) { l = 0; }
-		return Number(l).toFixed(3);
+		//accepts length in meters, returns formatted length in "unit"
+		//valid units are "fi" (feet and inches) and "m" (meters rounded to closest mm)
+		if (unit === undefined) { unit = "m"; }
+		
+		if (unit == "fi") {
+			return CALC.toFeetInches(l);
+		} else if (unit == "m"){
+			if (Math.abs(l) < 0.001) { l = 0; }
+			return Number(l).toFixed(3);
+		}
+		
+		console.log("invalid units")
+		return "ERROR"
 	};
 
 

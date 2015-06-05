@@ -54,7 +54,7 @@
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]) {
 					posElems[i].parentNode.classList.add("active");
-					posElems[i].value = PIPER.Calc.formatLength(positionSpecs[dims[i]]);
+					posElems[i].value = PIPER.Calc.formatLength(positionSpecs[dims[i]],context.units);
 					deltaElems[i].parentNode.classList.add("active");
 					markedActive[dims[i]] = true;
 				} else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
@@ -86,12 +86,12 @@
 					positionSpecs[dim] = 1;
 				}
 
-				posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim]);
+				posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
 
 				if (dim == 'l') {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim]);
+					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
 				} else {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim]);
+					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 				}
 
 
@@ -119,16 +119,16 @@
 			var onInput = function (e) {
 
 				if (!isDelta) {
-					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value);
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim]);
+					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
+					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 
 				} else {
 					if (dim == 'l') {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value);
+						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
 
 					} else {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value) + context.cursor.start[dim];
-						posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim]);
+						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
+						posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
 
 					}
 
@@ -211,10 +211,10 @@
 
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] === undefined) {
-					posElems[i].value = PIPER.Calc.formatLength(context.cursor.target[dims[i]]);
+					posElems[i].value = PIPER.Calc.formatLength(context.cursor.target[dims[i]],context.units);
 
 					if (deltaVisible) {
-						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]]);
+						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
 					}
 
 				}
@@ -726,9 +726,9 @@
 			elem.classList.add("obj")
 			elem.innerHTML = "<span>" +
 							sNode.uuid.slice(0,8) + "</span><span>" + 
-							PIPER.Calc.formatLength(sNode.position.x) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.y) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.z) + "</span>";
+							PIPER.Calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
+							PIPER.Calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
+							PIPER.Calc.formatLength(sNode.position.z,context.units) + "</span>";
 			selectMode.nElem.appendChild(elem)
 			selectMode.nodes.push(sNode)
 		}
@@ -740,7 +740,7 @@
 							sPipe.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
-							sPipe.length() + "</span>";
+							PIPER.Calc.formatLength(sPipe.length(),context.units) + "</span>";
 			selectMode.pElem.appendChild(elem)
 			selectMode.pipes.push(sPipe)
 		}
@@ -765,7 +765,8 @@
 				}
 			}
 			
-			selectMode.elem.innerHTML = "";
+			selectMode.pElem.innerHTML = "";
+			selectMode.nElem.innerHTML = "";
 			
 			selectMode.nodes = []
 			selectMode.pipes = []
@@ -841,6 +842,8 @@
 		this.model = new PIPER.Model();
 
 		this.mouseState = {x: 0, y: 0, right: false, left: false};
+		
+		this.units = "m"; //units used for display and input.  All calculations and storage based on meters.
 
 		this.modeManager = ModeManagerFactory(this);
 
@@ -855,8 +858,6 @@
 		this.modeManager.addMode(this.selectMode, document.getElementById("select-mode"), 83);
 
 		var ctx = this;
-		this.ctx = this;
-
 
 		document.addEventListener('mousemove', function (e) {
 			var cp = PIPER.Calc.getCursorPosition(e);
@@ -943,13 +944,6 @@
 
 		document.addEventListener("keyup", keyUpHandle, false);
 
-		document.getElementById("camera-toggle").addEventListener("click",
-			function (e) {
-				e.stopPropagation();
-				ctx.toggleCamera();
-			},
-			false);
-
 		document.getElementById("file-box").addEventListener("click",
 			function (e) { e.stopPropagation(); },
 			false);
@@ -966,6 +960,22 @@
 				e.stopPropagation();
 				var file = this.files[0];
 				ctx.loadFromFile(file);
+			},
+			false);
+			
+		document.getElementById("bottom-right").addEventListener("click",
+			function (e) { e.stopPropagation(); },
+			false);
+			
+		document.getElementById("unit-selector").addEventListener("change",
+			function (e) {
+				ctx.units = this.value;
+			},
+			false);
+			
+		document.getElementById("camera-style").addEventListener("change",
+			function (e) {
+				ctx.setCamera(this.value);
 			},
 			false);
 
@@ -1030,7 +1040,6 @@
 		},
 
 		zoomExtents: function () {
-			var ctx = this.ctx;
 			var box = new THREE.Box3();
 			box.setFromObject(ctx.visiblePipes);
 			//zoom cameras
@@ -1047,7 +1056,6 @@
 
 			this.clearAll();
 
-			var ctx = this.ctx;
 			var reader = new FileReader();
 
 			reader.onload = function () {
@@ -1062,7 +1070,6 @@
 		},
 
 		clearDisplayElements: function () {
-			var ctx = this.ctx;
 			THREE.Object3D.prototype.remove.apply(ctx.visiblePipes, ctx.visiblePipes.children);
 			THREE.Object3D.prototype.remove.apply(ctx.visibleNodes, ctx.visibleNodes.children);
 		},
@@ -1090,12 +1097,12 @@
 			}
 		},
 
-		toggleCamera: function () {
-			if (this.camera === this.cameraO) {
+		setCamera: function (camType) {
+			if (camType == "p" && this.camera === this.cameraO) {
 				this.controlsP.target.copy(this.controlsO.target);
 				this.cameraP.lookAt(this.controlsO.target);
 				this.camera = this.cameraP;
-			} else {
+			} else if (camType == "o" && this.camera === this.cameraP){
 				this.controlsO.target.copy(this.controlsP.target);
 				this.cameraO.lookAt(this.controlsP.target);
 				this.camera = this.cameraO;
