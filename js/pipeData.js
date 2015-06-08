@@ -7,9 +7,77 @@
 
 	var defaultDiameter = 0.1;
 
-	var nodeGeometry = new THREE.SphereGeometry(defaultDiameter);
+	var nodeGeometry = new THREE.SphereGeometry(defaultDiameter/2);
 	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
 	var segmentMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
+
+	// Geometries ////////////////////////////////////////////
+	
+	PIPER.globeGeometry = (function (){
+		var s = new THREE.SphereGeometry(1.2)
+		var c1 = new THREE.CylinderGeometry(0.6,0.6,1.5)
+		var t = new THREE.Matrix4()
+		
+		c1.applyMatrix(t.makeTranslation(0,0.75,0))
+		var c2 = new THREE.CylinderGeometry(1.2,1.2,0.5)
+		c2.applyMatrix(t.makeTranslation(0,1.5,0))
+		var c3 = new THREE.CylinderGeometry(0.2,0.2,1.5)
+		c3.applyMatrix(t.makeTranslation(0,2.5,0))
+		
+		c1.merge(s)
+		c1.merge(c2)
+		c1.merge(c3)
+		
+		return c1
+	})()
+	
+	PIPER.gateGeometry = (function (){
+		var g = new THREE.Geometry()
+		
+		g.vertices.push(
+			new THREE.Vector3(-0.6,-0.6,  0.3),
+			new THREE.Vector3(-0.6,-0.6, -0.3),
+			new THREE.Vector3( 0.6,-0.6, -0.3),
+			new THREE.Vector3( 0.6,-0.6,  0.3),
+			
+			new THREE.Vector3( 0.7, 1.2,  0.6),
+			new THREE.Vector3( 0.7, 1.2, -0.6),
+			
+			new THREE.Vector3(-0.7, 1.2,  0.6),
+			
+			new THREE.Vector3(-0.7, 1.2, -0.6)
+			
+		)
+		
+		g.faces.push(new THREE.Face3(0,1,2))
+		g.faces.push(new THREE.Face3(0,2,3))
+		
+		g.faces.push(new THREE.Face3(2,4,3))
+		g.faces.push(new THREE.Face3(2,5,4))
+		
+		g.faces.push(new THREE.Face3(3,4,6))
+		g.faces.push(new THREE.Face3(0,3,6))
+		
+		g.faces.push(new THREE.Face3(0,6,1))
+		g.faces.push(new THREE.Face3(1,6,7))
+		
+		g.faces.push(new THREE.Face3(1,7,5))
+		g.faces.push(new THREE.Face3(1,5,2))
+		
+		g.faces.push(new THREE.Face3(4,5,6))
+		g.faces.push(new THREE.Face3(5,7,6))
+		
+		g.computeFaceNormals();
+		
+		var c3 = new THREE.CylinderGeometry(0.2,0.2,1.5)
+		var t = new THREE.Matrix4()
+		c3.applyMatrix(t.makeTranslation(0,1.95,0))
+		
+		g.merge(c3)
+		
+		return g
+	})()
+
 
 	// Model //////////////////////////////////////////////////
 
@@ -112,7 +180,7 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
-				var segmentGeometry = new THREE.CylinderGeometry(this.diameter1, this.diameter2, 1);
+				var segmentGeometry = new THREE.CylinderGeometry(this.diameter1/2, this.diameter2/2, 1);
 				var cTrans = new THREE.Matrix4()
 				segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
 				segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));

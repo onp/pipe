@@ -192,7 +192,7 @@
 				var diam = diamElem.value
 				positioner.positionSpecs.diameter = diam
 				
-				var newGeom = new THREE.CylinderGeometry(diam, diam, 1);
+				var newGeom = new THREE.CylinderGeometry(diam/2, diam/2, 1);
 				var cTrans = new THREE.Matrix4();
 				newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
 				newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
