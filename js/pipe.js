@@ -1033,6 +1033,28 @@
 
 			var axisHelper = new THREE.AxisHelper(3);
 			this.scene.add(axisHelper);
+			
+			var north = new THREE.Vector3(1,0,0);
+			var arrowPosition = new THREE.Vector3(0,4,0);
+			var northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
+			this.scene.add(northArrow)
+			
+			var canvas1 = document.createElement('canvas');
+			canvas1.height = 300
+			canvas1.width = 260
+			var context1 = canvas1.getContext('2d');
+			context1.font = "Bold 300px Arial";
+			context1.fillStyle = "rgba(255,0,0,0.95)";
+			context1.fillText("N", 0, 300);
+			var texture1 = new THREE.Texture(canvas1);
+			texture1.minFilter = THREE.NearestFilter;
+			texture1.needsUpdate = true;
+			var spriteMaterial = new THREE.SpriteMaterial( { map: texture1, color: 0xaa2222} );
+			var sprite = new THREE.Sprite( spriteMaterial );
+			sprite.position.set(3, 4, 0);
+			this.scene.add(sprite);
+			
+			
 
 			var light = new THREE.PointLight(0xffffff);
 			light.position.set(200, 200, 0);
@@ -1042,8 +1064,8 @@
 			light2.position.set(-200, -100, 0);
 			this.scene.add(light2);
 
-			this.cameraO.position.set(20, 20, 20);
-			this.cameraP.position.set(20, 20, 20);
+			this.cameraO.position.set(-20, 20, 20);
+			this.cameraP.position.set(-20, 20, 20);
 			this.cameraO.up = new THREE.Vector3(0, 1, 0);
 			this.cameraP.up = new THREE.Vector3(0, 1, 0);
 			this.cameraO.lookAt(new THREE.Vector3(0, 0, 0));
