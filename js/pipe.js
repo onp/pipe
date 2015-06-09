@@ -25,6 +25,7 @@
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
 		var diamElem = document.getElementById("diameter")
+		positionSpecs.diameter = PIPER.defaultDiameter
 		positioner.lengthElem = deltaElems[3];
 
 		var i;
@@ -215,6 +216,9 @@
 
 					if (deltaVisible) {
 						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
+						if (document.activeElement !== diamElem) {
+							diamElem.value = PIPER.Calc.formatLength(positionSpecs.diameter,context.units);
+						}
 					}
 
 				}
@@ -236,6 +240,7 @@
 			positionSpecs.y  = undefined;
 			positionSpecs.z  = undefined;
 			positionSpecs.l = undefined;
+			positionSpecs.diameter = PIPER.defaultDiameter;
 
 		};
 
