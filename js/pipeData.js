@@ -7,33 +7,40 @@
 
 	var defaultDiameter = 0.1;
 
-	var nodeGeometry = new THREE.SphereGeometry(defaultDiameter/2);
+	var nodeGeometry = new THREE.SphereGeometry(1/2);
 	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
 	var segmentMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
 
 	// Geometries ////////////////////////////////////////////
 	
 	PIPER.globeGeometry = (function (){
-		var s = new THREE.SphereGeometry(1.2)
-		var c1 = new THREE.CylinderGeometry(0.6,0.6,1.5)
 		var t = new THREE.Matrix4()
 		
-		c1.applyMatrix(t.makeTranslation(0,0.75,0))
-		var c2 = new THREE.CylinderGeometry(1.2,1.2,0.5)
-		c2.applyMatrix(t.makeTranslation(0,1.5,0))
-		var c3 = new THREE.CylinderGeometry(0.2,0.2,1.5)
-		c3.applyMatrix(t.makeTranslation(0,2.5,0))
+		//body
+		var s = new THREE.SphereGeometry(0.8)
+
+		//riser
+		var c1 = new THREE.CylinderGeometry(0.5,0.7,1)
+		c1.applyMatrix(t.makeTranslation(0,0.5,0))
+		s.merge(c1)
+
+		//top flange
+		var c2 = new THREE.CylinderGeometry(0.8,0.8,0.2)
+		c2.applyMatrix(t.makeTranslation(0,1.1,0))
+		s.merge(c2)
 		
-		c1.merge(s)
-		c1.merge(c2)
-		c1.merge(c3)
+		//stem
+		var c3 = new THREE.CylinderGeometry(0.15,0.15,1.2)
+		c3.applyMatrix(t.makeTranslation(0,1.8,0))
+		s.merge(c3)
 		
-		return c1
+		return s
 	})()
 	
 	PIPER.gateGeometry = (function (){
 		var g = new THREE.Geometry()
 		
+		//body
 		g.vertices.push(
 			new THREE.Vector3(-0.6,-0.6,  0.3),
 			new THREE.Vector3(-0.6,-0.6, -0.3),
@@ -69,7 +76,8 @@
 		
 		g.computeFaceNormals();
 		
-		var c3 = new THREE.CylinderGeometry(0.2,0.2,1.5)
+		//stem
+		var c3 = new THREE.CylinderGeometry(0.15,0.15,1.5)
 		var t = new THREE.Matrix4()
 		c3.applyMatrix(t.makeTranslation(0,1.95,0))
 		
@@ -124,7 +132,8 @@
 						nodeData.position.elevation,
 						nodeData.position.east
 					),
-					nodeData.uuid
+					nodeData.uuid,
+					nodeData.type
 				);
 
 				this.nodes[nodeData.uuid] = newNode;
@@ -139,7 +148,6 @@
 					this.nodes[pipeData.node1],
 					this.nodes[pipeData.node2],
 					pipeData.d1,
-					pipeData.d2,
 					pipeData.uuid
 				);
 
@@ -161,13 +169,17 @@
 
 	// Segment //////////////////////////////////////////////////////////
 
-	PIPER.Segment = function (node1, node2, diameter1, diameter2, uuid) {
+	PIPER.Segment = function (node1, node2, diameter, uuid) {
 		this.node1 = node1;
 		this.node2 = node2 || new PIPER.Node(new THREE.Vector3());
-		this.diameter1 = diameter1 || defaultDiameter;
-		this.diameter2 = diameter2 || diameter1 || defaultDiameter;
+
+		this.diameter = diameter || defaultDiameter;
+		
 		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0x00ff00;
+		
+		this.node1.addConnection(this);
+		this.node2.addConnection(this);
 
 	};
 
@@ -180,7 +192,7 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
-				var segmentGeometry = new THREE.CylinderGeometry(this.diameter1/2, this.diameter2/2, 1);
+				var segmentGeometry = new THREE.CylinderGeometry(this.diameter/2, this.diameter/2, 1);
 				var cTrans = new THREE.Matrix4()
 				segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
 				segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
@@ -216,7 +228,7 @@
 
 		toJSON: function () {
 
-			return { node1: this.node1.uuid, node2: this.node2.uuid, d1: this.diameter1, d2: this.diameter2, uuid: this.uuid };
+			return { node1: this.node1.uuid, node2: this.node2.uuid, d1: this.diameter, uuid: this.uuid };
 
 		}
 
@@ -225,11 +237,15 @@
 
 	// Node /////////////////////////////////////////////////////////////
 
-	PIPER.Node = function (position, uuid) {
+	PIPER.Node = function (position, uuid,type) {
 
 		this.position = position;
 		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0xff0000;
+		this.nodeType = type || "node";
+		this.connections = [];
+		this.scale = 1;
+		this.lookAt = new THREE.Vector3()
 
 	};
 
@@ -242,13 +258,68 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
-				this.mesh = new THREE.Mesh(nodeGeometry, nodeMaterial.clone());
+				this.mesh = new THREE.Mesh();
+				this.mesh.material = nodeMaterial.clone();
 				this.mesh.position.copy(this.position);
 				this.mesh.userData.owner = this;
+				this.switchType(this.nodeType);
+				this.setScale();
 			}
-
+			
 			return this.mesh;
 
+		},
+		
+		switchType: function(newType){
+			if (newType == "gate"){
+				this.mesh.geometry = PIPER.gateGeometry.clone()
+				this.nodeType = "gate"
+			} else if (newType == "globe"){
+				this.mesh.geometry = PIPER.globeGeometry.clone()
+				this.nodeType = "globe"
+			} else {
+				//default to standard node.
+				this.mesh.geometry = nodeGeometry.clone()
+				this.nodeType = "node"
+			}
+		},
+		
+		addConnection: function(newConnection){
+			if (this.connections.indexOf(newConnection) == -1) {
+				this.connections.push(newConnection);
+			}
+			this.setScale();
+		},
+		
+		setScale: function(scale){
+			if (scale !== undefined){
+				this.scale = scale
+			} else {
+				var i;
+				this.scale = 0;
+				for (i = 0; i< this.connections.length; i++) {
+					if (this.connections[i].diameter > this.scale){
+						this.scale = this.connections[i].diameter
+					}
+				}
+				
+				if (this.scale == 0) {
+					this.scale = defaultDiameter
+				}
+			}
+			if (this.connections[0] !== undefined){
+				if (this.connections[0].node1 === this){
+					this.lookAt.copy(this.connections[0].node2.position)
+				} else if (this.connections[0].node2 === this){
+					this.lookAt.copy(this.connections[0].node1.position)
+				}
+			}
+			
+			if (this.mesh !==undefined) {
+				this.mesh.scale.set(this.scale,this.scale,this.scale)
+				this.mesh.lookAt(this.lookAt)
+			}
+			
 		},
 
 		hide: function () {
@@ -264,8 +335,12 @@
 		},
 
 		toJSON: function () {
-
-			return {uuid: this.uuid, position: {north: this.position.x, elevation: this.position.y, east: this.position.z}};
+			var rep = {}
+			
+			rep.uuid = this.uuid
+			rep.position = {north: this.position.x, elevation: this.position.y, east: this.position.z}
+			rep.type = this.nodeType
+			return rep;
 
 		}
 
