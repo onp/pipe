@@ -25,6 +25,7 @@
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
 		var diamElem = document.getElementById("diameter")
+		positionSpecs.diameter = PIPER.defaultDiameter
 		positioner.lengthElem = deltaElems[3];
 
 		var i;
@@ -189,10 +190,10 @@
 		
 		diamElem.addEventListener("input",
 			function(e){
-				var diam = diamElem.value
+				var diam = PIPER.Calc.parseLength(diamElem.value,context.units)
 				positioner.positionSpecs.diameter = diam
 				
-				var newGeom = new THREE.CylinderGeometry(diam, diam, 1);
+				var newGeom = new THREE.CylinderGeometry(diam/2, diam/2, 1);
 				var cTrans = new THREE.Matrix4();
 				newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
 				newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
@@ -215,6 +216,9 @@
 
 					if (deltaVisible) {
 						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
+						if (document.activeElement !== diamElem) {
+							diamElem.value = PIPER.Calc.formatLength(positionSpecs.diameter,context.units);
+						}
 					}
 
 				}
@@ -236,6 +240,7 @@
 			positionSpecs.y  = undefined;
 			positionSpecs.z  = undefined;
 			positionSpecs.l = undefined;
+			positionSpecs.diameter = PIPER.defaultDiameter;
 
 		};
 
@@ -590,7 +595,7 @@
 			context.cursor.setStart();
 
 			var d = context.positioner.positionSpecs.diameter;
-			var newPipe = new PIPER.Segment(sourceNode, newNode,d,d);
+			var newPipe = new PIPER.Segment(sourceNode, newNode, d);
 			context.model.pipes[newPipe.uuid] = newPipe;
 
 			context.visiblePipes.add(newPipe.makeMesh());
@@ -730,10 +735,22 @@
 							PIPER.Calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
 							PIPER.Calc.formatLength(sNode.position.z,context.units) + "</span>";
 			selectMode.nElem.appendChild(elem)
+			var typeSelector = document.createElement("select")
+			typeSelector.innerHTML = "<option value='node'>node</option>"+
+									 "<option value='gate'>gate</option>"+
+									 "<option value='globe'>globe</option>"
+			typeSelector.addEventListener("change",function(e){
+					sNode.switchType(e.target.value)
+				},
+				false
+			)
+			typeSelector.value = sNode.nodeType
+			elem.appendChild(typeSelector)
 			selectMode.nodes.push(sNode)
 		}
 		
 		selectMode.addPipe = function (sPipe) {
+			console.log(sPipe)
 			var elem = document.createElement("div");
 			elem.classList.add("obj")
 			elem.innerHTML = "<span>" + 
@@ -965,7 +982,13 @@
 			
 		document.getElementById("bottom-right").addEventListener("click",
 			function (e) { e.stopPropagation(); },
-			false);
+			false
+		);
+		
+		document.getElementById("selected-objects").addEventListener("click",
+			function (e) { e.stopPropagation(); },
+			false
+		);
 			
 		document.getElementById("unit-selector").addEventListener("change",
 			function (e) {
@@ -1010,6 +1033,28 @@
 
 			var axisHelper = new THREE.AxisHelper(3);
 			this.scene.add(axisHelper);
+			
+			var north = new THREE.Vector3(1,0,0);
+			var arrowPosition = new THREE.Vector3(0,4,0);
+			var northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
+			this.scene.add(northArrow)
+			
+			var canvas1 = document.createElement('canvas');
+			canvas1.height = 300
+			canvas1.width = 260
+			var context1 = canvas1.getContext('2d');
+			context1.font = "Bold 300px Arial";
+			context1.fillStyle = "rgba(255,0,0,0.95)";
+			context1.fillText("N", 0, 300);
+			var texture1 = new THREE.Texture(canvas1);
+			texture1.minFilter = THREE.NearestFilter;
+			texture1.needsUpdate = true;
+			var spriteMaterial = new THREE.SpriteMaterial( { map: texture1, color: 0xaa2222} );
+			var sprite = new THREE.Sprite( spriteMaterial );
+			sprite.position.set(3, 4, 0);
+			this.scene.add(sprite);
+			
+			
 
 			var light = new THREE.PointLight(0xffffff);
 			light.position.set(200, 200, 0);
@@ -1019,8 +1064,8 @@
 			light2.position.set(-200, -100, 0);
 			this.scene.add(light2);
 
-			this.cameraO.position.set(20, 20, 20);
-			this.cameraP.position.set(20, 20, 20);
+			this.cameraO.position.set(-20, 20, 20);
+			this.cameraP.position.set(-20, 20, 20);
 			this.cameraO.up = new THREE.Vector3(0, 1, 0);
 			this.cameraP.up = new THREE.Vector3(0, 1, 0);
 			this.cameraO.lookAt(new THREE.Vector3(0, 0, 0));
@@ -1057,6 +1102,7 @@
 			this.clearAll();
 
 			var reader = new FileReader();
+			var ctx = this;
 
 			reader.onload = function () {
 
@@ -1070,6 +1116,7 @@
 		},
 
 		clearDisplayElements: function () {
+			var ctx = this
 			THREE.Object3D.prototype.remove.apply(ctx.visiblePipes, ctx.visiblePipes.children);
 			THREE.Object3D.prototype.remove.apply(ctx.visibleNodes, ctx.visibleNodes.children);
 		},
