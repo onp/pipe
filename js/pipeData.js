@@ -5,7 +5,8 @@
 (function (PIPER, undefined) {
     "use strict";
 
-	var defaultDiameter = 0.1;
+	var defaultDiameter = 0.102;
+	PIPER.defaultDiameter = 0.102;
 
 	var nodeGeometry = new THREE.SphereGeometry(1/2);
 	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
