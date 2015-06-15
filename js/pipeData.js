@@ -308,6 +308,8 @@
 					this.scale = defaultDiameter
 				}
 			}
+			
+			//rotate the node if it has connections
 			if (this.connections[0] !== undefined){
 				if (this.connections[0].node1 === this){
 					this.lookAt.copy(this.connections[0].node2.position)
@@ -315,8 +317,9 @@
 					this.lookAt.copy(this.connections[0].node1.position)
 				}
 			}
-			
-			if (this.mesh !==undefined) {
+
+			// scale the node's mesh, if it exists.
+			if (this.mesh !== undefined) {
 				this.mesh.scale.set(this.scale,this.scale,this.scale)
 				this.mesh.lookAt(this.lookAt)
 			}

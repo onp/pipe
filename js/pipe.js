@@ -193,11 +193,7 @@
 				var diam = PIPER.Calc.parseLength(diamElem.value,context.units)
 				positioner.positionSpecs.diameter = diam
 				
-				var newGeom = new THREE.CylinderGeometry(diam/2, diam/2, 1);
-				var cTrans = new THREE.Matrix4();
-				newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-				newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
-				context.cursor.segment.mesh.geometry = newGeom;
+				context.cursor.setDiam(diam)
 			},
 			false
 		)
@@ -287,6 +283,7 @@
 			}
 
 			if (cursor.start === undefined) {
+				cursor.setDiam(context.positioner.positionSpecs.diameter)
 				cursor.group.add(cursor.segment.mesh);
 				cursor.group.add(cursor.angleHatching);
 			}
@@ -297,6 +294,16 @@
 			cursor.angleHatching.position.copy(pos);
 
 		};
+		
+		cursor.setDiam = function(diam){
+			var newGeom = new THREE.CylinderGeometry(diam/2, diam/2, 1);
+			var cTrans = new THREE.Matrix4();
+			newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
+			newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+			cursor.segment.mesh.geometry = newGeom;
+			cursor.segment.diameter = diam
+			cursor.node.setScale();
+		}
 
 		cursor.update = function () {
 			if (cursor.start === undefined) { return; }
@@ -474,6 +481,7 @@
 
 			context.positioner.clear();
 			context.positioner.positionSpecs.y = 0;
+			context.cursor.node.setScale(context.positioner.positionSpecs.diameter)
 
 			context.cursor.show();
 			context.positioner.show();
@@ -556,6 +564,7 @@
 			}
 
 			context.positioner.clear();
+			context.positioner.positionSpecs.diameter = currNode.scale
 
 			context.mode = drawMode;
 			this.state = "on";
