@@ -1065,12 +1065,12 @@
 			
 			
 
-			var light = new THREE.PointLight(0xffffff);
-			light.position.set(200, 200, 0);
+			var light = new THREE.DirectionalLight(0xffffff);
+			light.position.set(1, 1, 0);
 			this.scene.add(light);
 
-			var light2 = new THREE.PointLight(0x404040);
-			light2.position.set(-200, -100, 0);
+			var light2 = new THREE.DirectionalLight(0x606060);
+			light2.position.set(-1, -1, 0);
 			this.scene.add(light2);
 
 			this.cameraO.position.set(-20, 20, 20);
