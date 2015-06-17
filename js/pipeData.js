@@ -87,6 +87,13 @@
 		return g
 	})()
 
+	PIPER.segmentGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1);
+	var cTrans = new THREE.Matrix4()
+	PIPER.segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
+	PIPER.segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+	
+	
+	
 
 	// Model //////////////////////////////////////////////////
 
@@ -193,20 +200,30 @@
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
-				var segmentGeometry = new THREE.CylinderGeometry(this.diameter/2, this.diameter/2, 1);
-				var cTrans = new THREE.Matrix4()
-				segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-				segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
+				var geom = PIPER.segmentGeometry.clone();
+				var mat = segmentMaterial.clone();
 				
-				this.mesh = new THREE.Mesh(segmentGeometry, segmentMaterial.clone());
-				this.mesh.position.copy(this.node1.position);
-				this.mesh.scale.set(1, 1, this.node2.position.clone().sub(this.node1.position).length());
-				this.mesh.lookAt(this.node2.position);
+				this.mesh = new THREE.Mesh(geom, mat);
 				this.mesh.userData.owner = this;
+				this.updateMesh()
 			}
 
 			return this.mesh;
 
+		},
+		
+		updateMesh:function() {
+			this.mesh.position.copy(this.node1.position);
+			this.mesh.scale.set(this.diameter, this.diameter, this.length());
+			
+			this.mesh.lookAt(this.node2.position);
+		},
+		
+		setDiameter: function (diam) {
+			this.diameter = diam;
+			this.node1.setScale();
+			this.node2.setScale();
+			this.updateMesh()
 		},
 		
 		length: function () {

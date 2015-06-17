@@ -48,7 +48,10 @@
 		}, false);
 		
 		displayElement.addEventListener("keydown", function (e) {
-			e.stopPropagation();
+			//allow mode change events only to pass through.
+			if ([27,67,68,83,86].indexOf(e.keyCode) == -1) {
+				e.stopPropagation();
+			}
 		}, false);
 
 		var checkSpecs = function () {
@@ -271,37 +274,35 @@
 
 		cursor.setTarget = function (pos) {
 			cursor.node.mesh.position.copy(pos);
+			cursor.node.position.copy(pos)
 			cursor.update();
 		};
 
-		cursor.setStart = function (pos) {
-			if (pos === undefined) {
+		cursor.setStart = function (startNode) {
+			if (startNode === undefined) {
 				cursor.start = undefined;
 				cursor.group.remove(cursor.segment.mesh);
 				cursor.group.remove(cursor.angleHatching);
 				return;
 			}
+			
+			cursor.segment.node2 = startNode || cursor.segment.node2 
 
 			if (cursor.start === undefined) {
 				cursor.setDiam(context.positioner.positionSpecs.diameter)
 				cursor.group.add(cursor.segment.mesh);
 				cursor.group.add(cursor.angleHatching);
 			}
-
-			cursor.start = pos;
+			
+			cursor.start = cursor.segment.node2.mesh.position;
 			cursor.diff.subVectors(cursor.target, cursor.start);
-			cursor.segment.mesh.position.copy(pos);
-			cursor.angleHatching.position.copy(pos);
+			cursor.segment.updateMesh();
+			cursor.angleHatching.position.copy(cursor.start);
 
 		};
 		
 		cursor.setDiam = function(diam){
-			var newGeom = new THREE.CylinderGeometry(diam/2, diam/2, 1);
-			var cTrans = new THREE.Matrix4();
-			newGeom.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-			newGeom.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
-			cursor.segment.mesh.geometry = newGeom;
-			cursor.segment.diameter = diam
+			cursor.segment.setDiameter(diam);
 			cursor.node.setScale();
 		}
 
@@ -313,10 +314,9 @@
 				cursor.show();
 			}
 
-			cursor.segment.mesh.scale.set(1, 1, cursor.target.clone().sub(cursor.start).length());
-			cursor.segment.mesh.lookAt(cursor.target);
+			cursor.segment.updateMesh();
+			
 			cursor.diff.subVectors(cursor.target, cursor.start);
-
 			cursor.angleHatching.geometry.vertices[1] = new THREE.Vector3(cursor.diff.x, 0, 0);
 			cursor.angleHatching.geometry.vertices[2] = new THREE.Vector3(cursor.diff.x, 0, cursor.diff.z);
 			cursor.angleHatching.geometry.vertices[3] = new THREE.Vector3(cursor.diff.x, cursor.diff.y, cursor.diff.z);
@@ -333,7 +333,7 @@
 
 
 
-
+		console.log(cursor)
 		return cursor;
 	};
 	
@@ -571,7 +571,7 @@
 
 			sourceNode = currNode;
 
-			context.cursor.setStart(sourceNode.mesh.position.clone());
+			context.cursor.setStart(sourceNode);
 			context.cursor.show();
 			context.positioner.show();
 			context.modeManager.update();
@@ -755,11 +755,13 @@
 			)
 			typeSelector.value = sNode.nodeType
 			elem.appendChild(typeSelector)
+			
 			selectMode.nodes.push(sNode)
 		}
 		
 		selectMode.addPipe = function (sPipe) {
 			console.log(sPipe)
+			
 			var elem = document.createElement("div");
 			elem.classList.add("obj")
 			elem.innerHTML = "<span>" + 
@@ -767,6 +769,17 @@
 							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
 							PIPER.Calc.formatLength(sPipe.length(),context.units) + "</span>";
+			
+			var diamSetter = document.createElement("input")
+			diamSetter.addEventListener("input",function(e){
+					var diam = PIPER.Calc.parseLength(e.target.value,context.units)
+					sPipe.setDiameter(diam)
+				},
+				false
+			)
+			diamSetter.value = PIPER.Calc.formatLength(sPipe.diameter,context.units)
+			
+			elem.appendChild(diamSetter)
 			selectMode.pElem.appendChild(elem)
 			selectMode.pipes.push(sPipe)
 		}
@@ -825,7 +838,9 @@
 
 		selectMode.onKeyDown  = function (e) {
 			if (e.keyCode == 46 || e.keyCode == 8) {
-				selectMode.clearSelection(true)
+				if (document.activeElement.tagName !== "INPUT") {
+					selectMode.clearSelection(true);
+				}
 			} else if (e.keyCode == 27) {
 				context.viewMode.enter();
 			}
