@@ -73,7 +73,7 @@ div#menu-box input{
 }
 
 .menu-group  input{
-    width:45px;
+    width:90px;
     border:none;
 	vertical-align:middle;
 }
@@ -104,7 +104,6 @@ div#delta-box{
 }
 
 div#delta-box input{
-    width:45px;
     border:none;
 }
 
