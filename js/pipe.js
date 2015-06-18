@@ -1,4 +1,4 @@
-(function (PIPER, undefined) {
+(function (PIPE, undefined) {
 	"use strict";
 
 
@@ -25,7 +25,7 @@
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
 		var diamElem = document.getElementById("diameter")
-		positionSpecs.diameter = PIPER.defaultDiameter
+		positionSpecs.diameter = PIPE.defaultDiameter
 		positioner.lengthElem = deltaElems[3];
 
 		var i;
@@ -58,7 +58,7 @@
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]) {
 					posElems[i].parentNode.classList.add("active");
-					posElems[i].value = PIPER.Calc.formatLength(positionSpecs[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(positionSpecs[dims[i]],context.units);
 					deltaElems[i].parentNode.classList.add("active");
 					markedActive[dims[i]] = true;
 				} else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
@@ -90,12 +90,12 @@
 					positionSpecs[dim] = 1;
 				}
 
-				posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 
 				if (dim == 'l') {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 				} else {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 				}
 
 
@@ -123,16 +123,16 @@
 			var onInput = function (e) {
 
 				if (!isDelta) {
-					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 
 				} else {
 					if (dim == 'l') {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
 
 					} else {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
-						posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
+						posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 
 					}
 
@@ -193,7 +193,7 @@
 		
 		diamElem.addEventListener("input",
 			function(e){
-				var diam = PIPER.Calc.parseLength(diamElem.value,context.units)
+				var diam = PIPE.calc.parseLength(diamElem.value,context.units)
 				positioner.positionSpecs.diameter = diam
 				
 				context.cursor.setDiam(diam)
@@ -211,12 +211,12 @@
 
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] === undefined) {
-					posElems[i].value = PIPER.Calc.formatLength(context.cursor.target[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(context.cursor.target[dims[i]],context.units);
 
 					if (deltaVisible) {
-						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
+						deltaElems[i].value = PIPE.calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
 						if (document.activeElement !== diamElem) {
-							diamElem.value = PIPER.Calc.formatLength(positionSpecs.diameter,context.units);
+							diamElem.value = PIPE.calc.formatLength(positionSpecs.diameter,context.units);
 						}
 					}
 
@@ -239,7 +239,7 @@
 			positionSpecs.y  = undefined;
 			positionSpecs.z  = undefined;
 			positionSpecs.l = undefined;
-			positionSpecs.diameter = PIPER.defaultDiameter;
+			positionSpecs.diameter = PIPE.defaultDiameter;
 
 		};
 
@@ -253,8 +253,8 @@
 	var CursorFactory = function (context) {
 		var cursor = {};
 
-		cursor.node = new PIPER.Node(new THREE.Vector3(0, 1, 0));
-		cursor.segment = new PIPER.Segment(cursor.node);
+		cursor.node = new PIPE.Node(new THREE.Vector3(0, 1, 0));
+		cursor.segment = new PIPE.Segment(cursor.node);
 		cursor.group = new THREE.Object3D();
 
 		cursor.group.add(cursor.node.makeMesh());
@@ -505,7 +505,7 @@
 				
 			} else {
 
-				var newNode = new PIPER.Node(context.cursor.target.clone());
+				var newNode = new PIPE.Node(context.cursor.target.clone());
 
 				context.model.nodes[newNode.uuid] = newNode;
 
@@ -523,7 +523,7 @@
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
 
-			var iPoint = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
+			var iPoint = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
 
 			context.selector.updateHover(raycaster)
 			
@@ -595,7 +595,7 @@
 			
 			} else {
 
-				newNode = new PIPER.Node(context.cursor.target.clone());
+				newNode = new PIPE.Node(context.cursor.target.clone());
 				context.model.nodes[newNode.uuid] = newNode;
 				context.visibleNodes.add(newNode.makeMesh());
 				
@@ -604,7 +604,7 @@
 			context.cursor.setStart();
 
 			var d = context.positioner.positionSpecs.diameter;
-			var newPipe = new PIPER.Segment(sourceNode, newNode, d);
+			var newPipe = new PIPE.Segment(sourceNode, newNode, d);
 			context.model.pipes[newPipe.uuid] = newPipe;
 
 			context.visiblePipes.add(newPipe.makeMesh());
@@ -624,7 +624,7 @@
 			if ((context.selector.hoveredNode !== null) && (context.selector.hoveredNode !== sourceNode)) {
 				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
 			} else {
-				var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
+				var pt = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 				context.cursor.setTarget(pt);
 			}
 
@@ -740,9 +740,9 @@
 			elem.classList.add("obj")
 			elem.innerHTML = "<span>" +
 							sNode.uuid.slice(0,8) + "</span><span>" + 
-							PIPER.Calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.z,context.units) + "</span>";
+							PIPE.calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.z,context.units) + "</span>";
 			selectMode.nElem.appendChild(elem)
 			var typeSelector = document.createElement("select")
 			typeSelector.innerHTML = "<option value='node'>node</option>"+
@@ -768,16 +768,16 @@
 							sPipe.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
-							PIPER.Calc.formatLength(sPipe.length(),context.units) + "</span>";
+							PIPE.calc.formatLength(sPipe.length(),context.units) + "</span>";
 			
 			var diamSetter = document.createElement("input")
 			diamSetter.addEventListener("input",function(e){
-					var diam = PIPER.Calc.parseLength(e.target.value,context.units)
+					var diam = PIPE.calc.parseLength(e.target.value,context.units)
 					sPipe.setDiameter(diam)
 				},
 				false
 			)
-			diamSetter.value = PIPER.Calc.formatLength(sPipe.diameter,context.units)
+			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter,context.units)
 			
 			elem.appendChild(diamSetter)
 			selectMode.pElem.appendChild(elem)
@@ -868,7 +868,7 @@
 
 	////////////////////////////////////////////////////
 
-	PIPER.Context = function (targetElem) {
+	PIPE.Context = function (targetElem) {
 		this.container = targetElem;
 		this.positioner = PositionerFactory(this);
 
@@ -880,7 +880,7 @@
 		//this.previousMode = undefined;
 		this.cursor = CursorFactory(this);
 		this.selector = SelectorFactory(this);
-		this.model = new PIPER.Model();
+		this.model = new PIPE.Model();
 
 		this.mouseState = {x: 0, y: 0, right: false, left: false};
 		
@@ -901,7 +901,7 @@
 		var ctx = this;
 
 		document.addEventListener('mousemove', function (e) {
-			var cp = PIPER.Calc.getCursorPosition(e);
+			var cp = PIPE.calc.getCursorPosition(e);
 			ctx.mouseState.x = cp[0];
 			ctx.mouseState.ndcX = 2 * ((cp[0] - renderer.domElement.offsetLeft) / canvWidth) - 1;
 			ctx.mouseState.y = cp[1];
@@ -1035,9 +1035,9 @@
 
 	};
 
-	PIPER.Context.prototype = {
+	PIPE.Context.prototype = {
 
-		constructor: PIPER.Context,
+		constructor: PIPE.Context,
 
 		onFrame: function () {
 
@@ -1190,4 +1190,4 @@
 
 
 
-}(window.PIPER = window.PIPER || {}));
+}(window.PIPE = window.PIPE || {}));

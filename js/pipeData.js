@@ -2,107 +2,17 @@
 //        Y = UP
 //        Z = EAST
 
-(function (PIPER, undefined) {
+(function (PIPE, undefined) {
     "use strict";
-
-	var defaultDiameter = 0.102;
-	PIPER.defaultDiameter = 0.102;
-
-	var nodeGeometry = new THREE.SphereGeometry(1/2);
-	var nodeMaterial = new THREE.MeshLambertMaterial({color: 0xff0000});
-	var segmentMaterial = new THREE.MeshLambertMaterial({color: 0x00ff00});
-
-	// Geometries ////////////////////////////////////////////
-	
-	PIPER.globeGeometry = (function (){
-		var t = new THREE.Matrix4()
-		
-		//body
-		var s = new THREE.SphereGeometry(0.8)
-
-		//riser
-		var c1 = new THREE.CylinderGeometry(0.5,0.7,1)
-		c1.applyMatrix(t.makeTranslation(0,0.5,0))
-		s.merge(c1)
-
-		//top flange
-		var c2 = new THREE.CylinderGeometry(0.8,0.8,0.2)
-		c2.applyMatrix(t.makeTranslation(0,1.1,0))
-		s.merge(c2)
-		
-		//stem
-		var c3 = new THREE.CylinderGeometry(0.15,0.15,1.2)
-		c3.applyMatrix(t.makeTranslation(0,1.8,0))
-		s.merge(c3)
-		
-		return s
-	})()
-	
-	PIPER.gateGeometry = (function (){
-		var g = new THREE.Geometry()
-		
-		//body
-		g.vertices.push(
-			new THREE.Vector3(-0.6,-0.6,  0.3),
-			new THREE.Vector3(-0.6,-0.6, -0.3),
-			new THREE.Vector3( 0.6,-0.6, -0.3),
-			new THREE.Vector3( 0.6,-0.6,  0.3),
-			
-			new THREE.Vector3( 0.7, 1.2,  0.6),
-			new THREE.Vector3( 0.7, 1.2, -0.6),
-			
-			new THREE.Vector3(-0.7, 1.2,  0.6),
-			
-			new THREE.Vector3(-0.7, 1.2, -0.6)
-			
-		)
-		
-		g.faces.push(new THREE.Face3(0,1,2))
-		g.faces.push(new THREE.Face3(0,2,3))
-		
-		g.faces.push(new THREE.Face3(2,4,3))
-		g.faces.push(new THREE.Face3(2,5,4))
-		
-		g.faces.push(new THREE.Face3(3,4,6))
-		g.faces.push(new THREE.Face3(0,3,6))
-		
-		g.faces.push(new THREE.Face3(0,6,1))
-		g.faces.push(new THREE.Face3(1,6,7))
-		
-		g.faces.push(new THREE.Face3(1,7,5))
-		g.faces.push(new THREE.Face3(1,5,2))
-		
-		g.faces.push(new THREE.Face3(4,5,6))
-		g.faces.push(new THREE.Face3(5,7,6))
-		
-		g.computeFaceNormals();
-		
-		//stem
-		var c3 = new THREE.CylinderGeometry(0.15,0.15,1.5)
-		var t = new THREE.Matrix4()
-		c3.applyMatrix(t.makeTranslation(0,1.95,0))
-		
-		g.merge(c3)
-		
-		return g
-	})()
-
-	PIPER.segmentGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1);
-	var cTrans = new THREE.Matrix4()
-	PIPER.segmentGeometry.applyMatrix(cTrans.makeTranslation(0, 0.5, 0));
-	PIPER.segmentGeometry.applyMatrix(cTrans.makeRotationX(Math.PI / 2));
-	
-	
-	
 
 	// Model //////////////////////////////////////////////////
 
-	PIPER.Model = function () {
+	PIPE.Model = function () {
 		this.pipes = {};
 		this.nodes = {};
 	};
 
-	PIPER.Model.prototype = {
+	PIPE.Model.prototype = {
 
 		toJSON: function () {
 			var id;
@@ -134,7 +44,7 @@
 			for (i = 0; i < jsonModel.nodes.length; i++) {
 
 				var nodeData = jsonModel.nodes[i];
-				var newNode = new PIPER.Node(
+				var newNode = new PIPE.Node(
 					new THREE.Vector3(
 						nodeData.position.north,
 						nodeData.position.elevation,
@@ -152,7 +62,7 @@
 
 				var pipeData = jsonModel.pipes[i];
 
-				var newPipe = new PIPER.Segment(
+				var newPipe = new PIPE.Segment(
 					this.nodes[pipeData.node1],
 					this.nodes[pipeData.node2],
 					pipeData.d1,
@@ -177,11 +87,11 @@
 
 	// Segment //////////////////////////////////////////////////////////
 
-	PIPER.Segment = function (node1, node2, diameter, uuid) {
+	PIPE.Segment = function (node1, node2, diameter, uuid) {
 		this.node1 = node1;
-		this.node2 = node2 || new PIPER.Node(new THREE.Vector3());
+		this.node2 = node2 || new PIPE.Node(new THREE.Vector3());
 
-		this.diameter = diameter || defaultDiameter;
+		this.diameter = diameter || PIPE.defaultDiameter;
 		
 		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0x00ff00;
@@ -191,17 +101,17 @@
 
 	};
 
-	PIPER.Segment.prototype = {
+	PIPE.Segment.prototype = {
 
-		constructor: PIPER.Segment,
+		constructor: PIPE.Segment,
 
 		mesh: undefined,
 
 		makeMesh: function () {
 
 			if (this.mesh === undefined) {
-				var geom = PIPER.segmentGeometry.clone();
-				var mat = segmentMaterial.clone();
+				var geom = PIPE.geom.segment.clone();
+				var mat = PIPE.mat.segment.clone();
 				
 				this.mesh = new THREE.Mesh(geom, mat);
 				this.mesh.userData.owner = this;
@@ -255,7 +165,7 @@
 
 	// Node /////////////////////////////////////////////////////////////
 
-	PIPER.Node = function (position, uuid,type) {
+	PIPE.Node = function (position, uuid,type) {
 
 		this.position = position;
 		this.uuid = uuid || THREE.Math.generateUUID();
@@ -267,9 +177,9 @@
 
 	};
 
-	PIPER.Node.prototype = {
+	PIPE.Node.prototype = {
 
-		constructor: PIPER.Node,
+		constructor: PIPE.Node,
 
 		mesh: undefined,
 
@@ -277,7 +187,7 @@
 
 			if (this.mesh === undefined) {
 				this.mesh = new THREE.Mesh();
-				this.mesh.material = nodeMaterial.clone();
+				this.mesh.material = PIPE.mat.node.clone();
 				this.mesh.position.copy(this.position);
 				this.mesh.userData.owner = this;
 				this.switchType(this.nodeType);
@@ -290,14 +200,14 @@
 		
 		switchType: function(newType){
 			if (newType == "gate"){
-				this.mesh.geometry = PIPER.gateGeometry.clone()
+				this.mesh.geometry = PIPE.geom.gateValve.clone()
 				this.nodeType = "gate"
 			} else if (newType == "globe"){
-				this.mesh.geometry = PIPER.globeGeometry.clone()
+				this.mesh.geometry = PIPE.geom.globeValve.clone()
 				this.nodeType = "globe"
 			} else {
 				//default to standard node.
-				this.mesh.geometry = nodeGeometry.clone()
+				this.mesh.geometry = PIPE.geom.node.clone()
 				this.nodeType = "node"
 			}
 		},
@@ -322,7 +232,7 @@
 				}
 				
 				if (this.scale == 0) {
-					this.scale = defaultDiameter
+					this.scale = PIPE.defaultDiameter
 				}
 			}
 			
@@ -371,4 +281,4 @@
 
 
 
-}(window.PIPER = window.PIPER || {}));
+}(window.PIPE = window.PIPE || {}));

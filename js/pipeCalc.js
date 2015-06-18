@@ -1,5 +1,8 @@
-(function (CALC, undefined) {
+(function (PIPE, undefined) {
     "use strict";
+	
+	var CALC = {};
+	PIPE.calc = CALC;
 
 	CALC.getCursorPosition = function (e) {
 		var x, y;
@@ -285,4 +288,4 @@
 
 
 
-}(window.PIPER.Calc = window.PIPER.Calc || {}));
+}(window.PIPE = window.PIPE || {}));
