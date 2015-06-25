@@ -1,4 +1,4 @@
-(function (PIPER, undefined) {
+(function (PIPE, undefined) {
 	"use strict";
 
 
@@ -25,7 +25,7 @@
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
 		var diamElem = document.getElementById("diameter")
-		positionSpecs.diameter = PIPER.defaultDiameter
+		positionSpecs.diameter = PIPE.defaultDiameter
 		positioner.lengthElem = deltaElems[3];
 
 		var i;
@@ -58,7 +58,7 @@
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]) {
 					posElems[i].parentNode.classList.add("active");
-					posElems[i].value = PIPER.Calc.formatLength(positionSpecs[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(positionSpecs[dims[i]],context.units);
 					deltaElems[i].parentNode.classList.add("active");
 					markedActive[dims[i]] = true;
 				} else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
@@ -90,12 +90,12 @@
 					positionSpecs[dim] = 1;
 				}
 
-				posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 
 				if (dim == 'l') {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 				} else {
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 				}
 
 
@@ -123,16 +123,16 @@
 			var onInput = function (e) {
 
 				if (!isDelta) {
-					positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
-					deltaElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
 
 				} else {
 					if (dim == 'l') {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
 
 					} else {
-						positionSpecs[dim] = PIPER.Calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
-						posElems[dim].value = PIPER.Calc.formatLength(positionSpecs[dim],context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
+						posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
 
 					}
 
@@ -193,7 +193,7 @@
 		
 		diamElem.addEventListener("input",
 			function(e){
-				var diam = PIPER.Calc.parseLength(diamElem.value,context.units)
+				var diam = PIPE.calc.parseLength(diamElem.value,context.units)
 				positioner.positionSpecs.diameter = diam
 				
 				context.cursor.setDiam(diam)
@@ -211,12 +211,12 @@
 
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] === undefined) {
-					posElems[i].value = PIPER.Calc.formatLength(context.cursor.target[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(context.cursor.target[dims[i]],context.units);
 
 					if (deltaVisible) {
-						deltaElems[i].value = PIPER.Calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
+						deltaElems[i].value = PIPE.calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
 						if (document.activeElement !== diamElem) {
-							diamElem.value = PIPER.Calc.formatLength(positionSpecs.diameter,context.units);
+							diamElem.value = PIPE.calc.formatLength(positionSpecs.diameter,context.units);
 						}
 					}
 
@@ -239,7 +239,7 @@
 			positionSpecs.y  = undefined;
 			positionSpecs.z  = undefined;
 			positionSpecs.l = undefined;
-			positionSpecs.diameter = PIPER.defaultDiameter;
+			positionSpecs.diameter = PIPE.defaultDiameter;
 
 		};
 
@@ -253,8 +253,8 @@
 	var CursorFactory = function (context) {
 		var cursor = {};
 
-		cursor.node = new PIPER.Node(new THREE.Vector3(0, 1, 0));
-		cursor.segment = new PIPER.Segment(cursor.node);
+		cursor.node = new PIPE.Node(new THREE.Vector3(0, 1, 0));
+		cursor.segment = new PIPE.Segment(cursor.node);
 		cursor.group = new THREE.Object3D();
 
 		cursor.group.add(cursor.node.makeMesh());
@@ -505,7 +505,7 @@
 				
 			} else {
 
-				var newNode = new PIPER.Node(context.cursor.target.clone());
+				var newNode = new PIPE.Node(context.cursor.target.clone());
 
 				context.model.nodes[newNode.uuid] = newNode;
 
@@ -523,7 +523,7 @@
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
 
-			var iPoint = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
+			var iPoint = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
 
 			context.selector.updateHover(raycaster)
 			
@@ -595,7 +595,7 @@
 			
 			} else {
 
-				newNode = new PIPER.Node(context.cursor.target.clone());
+				newNode = new PIPE.Node(context.cursor.target.clone());
 				context.model.nodes[newNode.uuid] = newNode;
 				context.visibleNodes.add(newNode.makeMesh());
 				
@@ -604,7 +604,7 @@
 			context.cursor.setStart();
 
 			var d = context.positioner.positionSpecs.diameter;
-			var newPipe = new PIPER.Segment(sourceNode, newNode, d);
+			var newPipe = new PIPE.Segment(sourceNode, newNode, d);
 			context.model.pipes[newPipe.uuid] = newPipe;
 
 			context.visiblePipes.add(newPipe.makeMesh());
@@ -624,7 +624,7 @@
 			if ((context.selector.hoveredNode !== null) && (context.selector.hoveredNode !== sourceNode)) {
 				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
 			} else {
-				var pt = PIPER.Calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
+				var pt = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 				context.cursor.setTarget(pt);
 			}
 
@@ -740,9 +740,9 @@
 			elem.classList.add("obj")
 			elem.innerHTML = "<span>" +
 							sNode.uuid.slice(0,8) + "</span><span>" + 
-							PIPER.Calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
-							PIPER.Calc.formatLength(sNode.position.z,context.units) + "</span>";
+							PIPE.calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.z,context.units) + "</span>";
 			selectMode.nElem.appendChild(elem)
 			var typeSelector = document.createElement("select")
 			typeSelector.innerHTML = "<option value='node'>node</option>"+
@@ -768,16 +768,16 @@
 							sPipe.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
 							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
-							PIPER.Calc.formatLength(sPipe.length(),context.units) + "</span>";
+							PIPE.calc.formatLength(sPipe.length(),context.units) + "</span>";
 			
 			var diamSetter = document.createElement("input")
 			diamSetter.addEventListener("input",function(e){
-					var diam = PIPER.Calc.parseLength(e.target.value,context.units)
+					var diam = PIPE.calc.parseLength(e.target.value,context.units)
 					sPipe.setDiameter(diam)
 				},
 				false
 			)
-			diamSetter.value = PIPER.Calc.formatLength(sPipe.diameter,context.units)
+			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter,context.units)
 			
 			elem.appendChild(diamSetter)
 			selectMode.pElem.appendChild(elem)
@@ -868,7 +868,7 @@
 
 	////////////////////////////////////////////////////
 
-	PIPER.Context = function (targetElem) {
+	PIPE.Context = function (targetElem) {
 		this.container = targetElem;
 		this.positioner = PositionerFactory(this);
 
@@ -880,7 +880,7 @@
 		//this.previousMode = undefined;
 		this.cursor = CursorFactory(this);
 		this.selector = SelectorFactory(this);
-		this.model = new PIPER.Model();
+		this.model = new PIPE.Model();
 
 		this.mouseState = {x: 0, y: 0, right: false, left: false};
 		
@@ -901,22 +901,19 @@
 		var ctx = this;
 
 		document.addEventListener('mousemove', function (e) {
-			var cp = PIPER.Calc.getCursorPosition(e);
+			var cp = PIPE.calc.getCursorPosition(e);
 			ctx.mouseState.x = cp[0];
-			ctx.mouseState.ndcX = 2 * ((cp[0] - renderer.domElement.offsetLeft) / canvWidth) - 1;
+			ctx.mouseState.ndcX = 2 * ((cp[0] - renderer.domElement.offsetLeft) / ctx.canvWidth) - 1;
 			ctx.mouseState.y = cp[1];
-			ctx.mouseState.ndcY = 1 - 2 * ((cp[1] - renderer.domElement.offsetTop) / canvHeight);
+			ctx.mouseState.ndcY = 1 - 2 * ((cp[1] - renderer.domElement.offsetTop) / ctx.canvHeight);
 		}, false);
 
-
-		var canvWidth, canvHeight, aspectRatio;
-
-		var orthoWidth = 20;
+		this.orthoWidth = 20;
 
 		var renderer;
 
 		if (window.WebGLRenderingContext) {
-			renderer = new THREE.WebGLRenderer();
+			renderer = new THREE.WebGLRenderer({antialias:true});
 		} else {
 			renderer = new THREE.CanvasRenderer();
 		}
@@ -927,20 +924,20 @@
 
 		this.onResize = function () {
 
-			canvWidth = targetElem.offsetWidth - 3;
-			canvHeight = targetElem.offsetHeight - 4;
-			aspectRatio = canvWidth / canvHeight;
+			ctx.canvWidth = targetElem.offsetWidth - 3;
+			ctx.canvHeight = targetElem.offsetHeight - 4;
+			ctx.aspectRatio = ctx.canvWidth / ctx.canvHeight;
 
-			ctx.cameraP.aspect = aspectRatio;
+			ctx.cameraP.aspect = ctx.aspectRatio;
 			ctx.cameraP.updateProjectionMatrix();
 
-			ctx.cameraO.left = orthoWidth / -2;
-			ctx.cameraO.right = orthoWidth / 2;
-			ctx.cameraO.top = orthoWidth / (2 * aspectRatio);
-			ctx.cameraO.bottom = orthoWidth / (-2 * aspectRatio);
+			ctx.cameraO.left = ctx.orthoWidth / -2;
+			ctx.cameraO.right = ctx.orthoWidth / 2;
+			ctx.cameraO.top = ctx.orthoWidth / (2 * ctx.aspectRatio);
+			ctx.cameraO.bottom = ctx.orthoWidth / (-2 * ctx.aspectRatio);
 			ctx.cameraO.updateProjectionMatrix();
 
-			renderer.setSize(canvWidth, canvHeight);
+			renderer.setSize(ctx.canvWidth, ctx.canvHeight);
 
 		};
 
@@ -1020,6 +1017,21 @@
 			},
 			false);
 			
+		document.getElementById("show-helpers").addEventListener("change",
+			function(e) {
+				ctx.setHelpers(this.value)
+			},
+			false);
+			
+		document.getElementById("reset-view").addEventListener("click",
+			function (e) {
+				//var pos = new THREE.Vector3(-20, 20, 20);
+				//var lookAt = new THREE.Vector3();
+				
+				//ctx.setView(pos,lookAt);
+				ctx.centerView()
+			})
+			
 		document.getElementById("camera-style").addEventListener("change",
 			function (e) {
 				ctx.setCamera(this.value);
@@ -1035,9 +1047,9 @@
 
 	};
 
-	PIPER.Context.prototype = {
+	PIPE.Context.prototype = {
 
-		constructor: PIPER.Context,
+		constructor: PIPE.Context,
 
 		onFrame: function () {
 
@@ -1054,14 +1066,16 @@
 
 			this.visibleNodes = new THREE.Object3D();
 			this.scene.add(this.visibleNodes);
-
-			var axisHelper = new THREE.AxisHelper(3);
-			this.scene.add(axisHelper);
+			
+			this.helpers = {}
+			
+			this.helpers.axisHelper = new THREE.AxisHelper(3);
+			this.scene.add(this.helpers.axisHelper);
 			
 			var north = new THREE.Vector3(1,0,0);
 			var arrowPosition = new THREE.Vector3(0,4,0);
-			var northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
-			this.scene.add(northArrow)
+			this.helpers.northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
+			this.scene.add(this.helpers.northArrow)
 			
 			var canvas1 = document.createElement('canvas');
 			canvas1.height = 300
@@ -1074,10 +1088,9 @@
 			texture1.minFilter = THREE.NearestFilter;
 			texture1.needsUpdate = true;
 			var spriteMaterial = new THREE.SpriteMaterial( { map: texture1, color: 0xaa2222} );
-			var sprite = new THREE.Sprite( spriteMaterial );
-			sprite.position.set(3, 4, 0);
-			this.scene.add(sprite);
-			
+			this.helpers.nSprite = new THREE.Sprite( spriteMaterial );
+			this.helpers.nSprite.position.set(3, 4, 0);
+			this.scene.add(this.helpers.nSprite);
 			
 
 			var light = new THREE.DirectionalLight(0xffffff);
@@ -1099,6 +1112,9 @@
 			this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 			this.controlsO.enabled = false;
 			this.controlsP.enabled = false;
+			
+			this.helpers.bbHelper = new THREE.BoundingBoxHelper(this.visibleNodes,0x000000)
+			this.scene.add(this.helpers.bbHelper)
 
 			this.ctrlOtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
 			this.ctrlPtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
@@ -1132,6 +1148,7 @@
 
 				ctx.model.loadJSON(reader.result);
 				ctx.rebuildFromModel();
+				ctx.centerView();
 
 			};
 
@@ -1148,6 +1165,62 @@
 		clearAll: function () {
 			this.clearDisplayElements();
 			this.model.clear();
+		},
+		
+		setView: function (position,lookAt) {
+			//position and lookAt are THREE.Vector3
+			this.cameraO.position.copy(position)
+			this.cameraP.position.copy(position)
+			this.cameraO.lookAt(lookAt)
+			this.cameraP.lookAt(lookAt)
+			this.controlsO.target.copy(lookAt)
+			this.controlsP.target.copy(lookAt)
+			this.cameraO.zoom = 1;
+			this.cameraO.updateProjectionMatrix()
+		},
+		
+		centerView: function(){
+			var box = new THREE.Box3()
+			box.setFromObject(this.visibleNodes)
+			this.setView(box.center().add(new THREE.Vector3(-20,20,20)),box.center())
+			
+			var size = box.size().length();
+			
+			var zoom;
+			
+			if (this.aspectRatio > 1){
+				zoom = this.orthoWidth/this.aspectRatio/size;
+			} else {
+				zoom = this.orthoWidth/size;
+			}
+			
+			console.log(zoom)
+			
+			console.log(this.orthoWidth,this.aspectRatio,size)
+			
+			this.cameraO.zoom = zoom;
+			this.cameraO.updateProjectionMatrix()
+			
+			this.helpers.bbHelper.update()
+			
+		},
+		
+		setHelpers: function (helpers) {
+			if (helpers == "none"){
+				this.scene.remove(this.helpers.bbHelper)
+				this.scene.remove(this.helpers.northArrow)
+				this.scene.remove(this.helpers.nSprite)
+				this.scene.remove(this.helpers.axisHelper)
+				this.scene.remove(this.ctrlOtarget)
+				this.scene.remove(this.ctrlPtarget)
+			} else if (helpers == "all") {
+				this.scene.add(this.helpers.bbHelper)
+				this.scene.add(this.helpers.northArrow)
+				this.scene.add(this.helpers.nSprite)
+				this.scene.add(this.helpers.axisHelper)
+				this.scene.add(this.ctrlOtarget)
+				this.scene.add(this.ctrlPtarget)
+			}
 		},
 
 		rebuildFromModel: function () {
@@ -1190,4 +1263,4 @@
 
 
 
-}(window.PIPER = window.PIPER || {}));
+}(window.PIPE = window.PIPE || {}));
