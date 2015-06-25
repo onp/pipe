@@ -903,20 +903,17 @@
 		document.addEventListener('mousemove', function (e) {
 			var cp = PIPE.calc.getCursorPosition(e);
 			ctx.mouseState.x = cp[0];
-			ctx.mouseState.ndcX = 2 * ((cp[0] - renderer.domElement.offsetLeft) / canvWidth) - 1;
+			ctx.mouseState.ndcX = 2 * ((cp[0] - renderer.domElement.offsetLeft) / ctx.canvWidth) - 1;
 			ctx.mouseState.y = cp[1];
-			ctx.mouseState.ndcY = 1 - 2 * ((cp[1] - renderer.domElement.offsetTop) / canvHeight);
+			ctx.mouseState.ndcY = 1 - 2 * ((cp[1] - renderer.domElement.offsetTop) / ctx.canvHeight);
 		}, false);
 
-
-		var canvWidth, canvHeight, aspectRatio;
-
-		var orthoWidth = 20;
+		this.orthoWidth = 20;
 
 		var renderer;
 
 		if (window.WebGLRenderingContext) {
-			renderer = new THREE.WebGLRenderer();
+			renderer = new THREE.WebGLRenderer({antialias:true});
 		} else {
 			renderer = new THREE.CanvasRenderer();
 		}
@@ -927,20 +924,20 @@
 
 		this.onResize = function () {
 
-			canvWidth = targetElem.offsetWidth - 3;
-			canvHeight = targetElem.offsetHeight - 4;
-			aspectRatio = canvWidth / canvHeight;
+			ctx.canvWidth = targetElem.offsetWidth - 3;
+			ctx.canvHeight = targetElem.offsetHeight - 4;
+			ctx.aspectRatio = ctx.canvWidth / ctx.canvHeight;
 
-			ctx.cameraP.aspect = aspectRatio;
+			ctx.cameraP.aspect = ctx.aspectRatio;
 			ctx.cameraP.updateProjectionMatrix();
 
-			ctx.cameraO.left = orthoWidth / -2;
-			ctx.cameraO.right = orthoWidth / 2;
-			ctx.cameraO.top = orthoWidth / (2 * aspectRatio);
-			ctx.cameraO.bottom = orthoWidth / (-2 * aspectRatio);
+			ctx.cameraO.left = ctx.orthoWidth / -2;
+			ctx.cameraO.right = ctx.orthoWidth / 2;
+			ctx.cameraO.top = ctx.orthoWidth / (2 * ctx.aspectRatio);
+			ctx.cameraO.bottom = ctx.orthoWidth / (-2 * ctx.aspectRatio);
 			ctx.cameraO.updateProjectionMatrix();
 
-			renderer.setSize(canvWidth, canvHeight);
+			renderer.setSize(ctx.canvWidth, ctx.canvHeight);
 
 		};
 
@@ -1020,6 +1017,21 @@
 			},
 			false);
 			
+		document.getElementById("show-helpers").addEventListener("change",
+			function(e) {
+				ctx.setHelpers(this.value)
+			},
+			false);
+			
+		document.getElementById("reset-view").addEventListener("click",
+			function (e) {
+				//var pos = new THREE.Vector3(-20, 20, 20);
+				//var lookAt = new THREE.Vector3();
+				
+				//ctx.setView(pos,lookAt);
+				ctx.centerView()
+			})
+			
 		document.getElementById("camera-style").addEventListener("change",
 			function (e) {
 				ctx.setCamera(this.value);
@@ -1054,14 +1066,16 @@
 
 			this.visibleNodes = new THREE.Object3D();
 			this.scene.add(this.visibleNodes);
-
-			var axisHelper = new THREE.AxisHelper(3);
-			this.scene.add(axisHelper);
+			
+			this.helpers = {}
+			
+			this.helpers.axisHelper = new THREE.AxisHelper(3);
+			this.scene.add(this.helpers.axisHelper);
 			
 			var north = new THREE.Vector3(1,0,0);
 			var arrowPosition = new THREE.Vector3(0,4,0);
-			var northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
-			this.scene.add(northArrow)
+			this.helpers.northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
+			this.scene.add(this.helpers.northArrow)
 			
 			var canvas1 = document.createElement('canvas');
 			canvas1.height = 300
@@ -1074,10 +1088,9 @@
 			texture1.minFilter = THREE.NearestFilter;
 			texture1.needsUpdate = true;
 			var spriteMaterial = new THREE.SpriteMaterial( { map: texture1, color: 0xaa2222} );
-			var sprite = new THREE.Sprite( spriteMaterial );
-			sprite.position.set(3, 4, 0);
-			this.scene.add(sprite);
-			
+			this.helpers.nSprite = new THREE.Sprite( spriteMaterial );
+			this.helpers.nSprite.position.set(3, 4, 0);
+			this.scene.add(this.helpers.nSprite);
 			
 
 			var light = new THREE.DirectionalLight(0xffffff);
@@ -1099,6 +1112,9 @@
 			this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 			this.controlsO.enabled = false;
 			this.controlsP.enabled = false;
+			
+			this.helpers.bbHelper = new THREE.BoundingBoxHelper(this.visibleNodes,0x000000)
+			this.scene.add(this.helpers.bbHelper)
 
 			this.ctrlOtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
 			this.ctrlPtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
@@ -1132,6 +1148,7 @@
 
 				ctx.model.loadJSON(reader.result);
 				ctx.rebuildFromModel();
+				ctx.centerView();
 
 			};
 
@@ -1148,6 +1165,62 @@
 		clearAll: function () {
 			this.clearDisplayElements();
 			this.model.clear();
+		},
+		
+		setView: function (position,lookAt) {
+			//position and lookAt are THREE.Vector3
+			this.cameraO.position.copy(position)
+			this.cameraP.position.copy(position)
+			this.cameraO.lookAt(lookAt)
+			this.cameraP.lookAt(lookAt)
+			this.controlsO.target.copy(lookAt)
+			this.controlsP.target.copy(lookAt)
+			this.cameraO.zoom = 1;
+			this.cameraO.updateProjectionMatrix()
+		},
+		
+		centerView: function(){
+			var box = new THREE.Box3()
+			box.setFromObject(this.visibleNodes)
+			this.setView(box.center().add(new THREE.Vector3(-20,20,20)),box.center())
+			
+			var size = box.size().length();
+			
+			var zoom;
+			
+			if (this.aspectRatio > 1){
+				zoom = this.orthoWidth/this.aspectRatio/size;
+			} else {
+				zoom = this.orthoWidth/size;
+			}
+			
+			console.log(zoom)
+			
+			console.log(this.orthoWidth,this.aspectRatio,size)
+			
+			this.cameraO.zoom = zoom;
+			this.cameraO.updateProjectionMatrix()
+			
+			this.helpers.bbHelper.update()
+			
+		},
+		
+		setHelpers: function (helpers) {
+			if (helpers == "none"){
+				this.scene.remove(this.helpers.bbHelper)
+				this.scene.remove(this.helpers.northArrow)
+				this.scene.remove(this.helpers.nSprite)
+				this.scene.remove(this.helpers.axisHelper)
+				this.scene.remove(this.ctrlOtarget)
+				this.scene.remove(this.ctrlPtarget)
+			} else if (helpers == "all") {
+				this.scene.add(this.helpers.bbHelper)
+				this.scene.add(this.helpers.northArrow)
+				this.scene.add(this.helpers.nSprite)
+				this.scene.add(this.helpers.axisHelper)
+				this.scene.add(this.ctrlOtarget)
+				this.scene.add(this.ctrlPtarget)
+			}
 		},
 
 		rebuildFromModel: function () {
