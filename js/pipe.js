@@ -24,8 +24,8 @@
 
 		var posElems = posTags.map(function (a) {return document.getElementById(a); });
 		var deltaElems = deltaTags.map(function (a) {return document.getElementById(a); });
-		var diamElem = document.getElementById("diameter")
-		positionSpecs.diameter = PIPE.defaultDiameter
+		var diamElem = document.getElementById("diameter");
+		positionSpecs.diameter = PIPE.defaultDiameter;
 		positioner.lengthElem = deltaElems[3];
 
 		var i;
@@ -46,10 +46,10 @@
 		displayElement.addEventListener("click", function (e) {
 			e.stopPropagation();
 		}, false);
-		
+
 		displayElement.addEventListener("keydown", function (e) {
 			//allow mode change events only to pass through.
-			if ([27,67,68,83,86].indexOf(e.keyCode) == -1) {
+			if ([27, 67, 68, 83, 86].indexOf(e.keyCode) == -1) {
 				e.stopPropagation();
 			}
 		}, false);
@@ -58,7 +58,7 @@
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] !== undefined && !markedActive[dims[i]]) {
 					posElems[i].parentNode.classList.add("active");
-					posElems[i].value = PIPE.calc.formatLength(positionSpecs[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(positionSpecs[dims[i]], context.units);
 					deltaElems[i].parentNode.classList.add("active");
 					markedActive[dims[i]] = true;
 				} else if (positionSpecs[dims[i]] === undefined && markedActive[dims[i]]) {
@@ -90,12 +90,12 @@
 					positionSpecs[dim] = 1;
 				}
 
-				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
+				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
 
 				if (dim == 'l') {
-					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
 				} else {
-					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim], context.units);
 				}
 
 
@@ -123,16 +123,16 @@
 			var onInput = function (e) {
 
 				if (!isDelta) {
-					positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
-					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim],context.units);
+					positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units);
+					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim], context.units);
 
 				} else {
 					if (dim == 'l') {
-						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units);
 
 					} else {
-						positionSpecs[dim] = PIPE.calc.parseLength(elem.value,context.units) + context.cursor.start[dim];
-						posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim],context.units);
+						positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units) + context.cursor.start[dim];
+						posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
 
 					}
 
@@ -190,16 +190,16 @@
 				false);
 
 		}
-		
+
 		diamElem.addEventListener("input",
-			function(e){
-				var diam = PIPE.calc.parseLength(diamElem.value,context.units)
-				positioner.positionSpecs.diameter = diam
-				
-				context.cursor.setDiam(diam)
+			function (e) {
+				var diam = PIPE.calc.parseLength(diamElem.value, context.units);
+				positioner.positionSpecs.diameter = diam;
+
+				context.cursor.setDiam(diam);
 			},
 			false
-		)
+		    );
 
 
 
@@ -211,12 +211,12 @@
 
 			for (i = 0; i < dims.length; i++) {
 				if (positionSpecs[dims[i]] === undefined) {
-					posElems[i].value = PIPE.calc.formatLength(context.cursor.target[dims[i]],context.units);
+					posElems[i].value = PIPE.calc.formatLength(context.cursor.target[dims[i]], context.units);
 
 					if (deltaVisible) {
-						deltaElems[i].value = PIPE.calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]],context.units);
+						deltaElems[i].value = PIPE.calc.formatLength((dims[i] == "l") ? context.cursor.diff.length() : context.cursor.diff[dims[i]], context.units);
 						if (document.activeElement !== diamElem) {
-							diamElem.value = PIPE.calc.formatLength(positionSpecs.diameter,context.units);
+							diamElem.value = PIPE.calc.formatLength(positionSpecs.diameter, context.units);
 						}
 					}
 
@@ -274,7 +274,7 @@
 
 		cursor.setTarget = function (pos) {
 			cursor.node.mesh.position.copy(pos);
-			cursor.node.position.copy(pos)
+			cursor.node.position.copy(pos);
 			cursor.update();
 		};
 
@@ -285,37 +285,37 @@
 				cursor.group.remove(cursor.angleHatching);
 				return;
 			}
-			
-			cursor.segment.node2 = startNode || cursor.segment.node2 
+
+			cursor.segment.node2 = startNode || cursor.segment.node2;
 
 			if (cursor.start === undefined) {
-				cursor.setDiam(context.positioner.positionSpecs.diameter)
+				cursor.setDiam(context.positioner.positionSpecs.diameter);
 				cursor.group.add(cursor.segment.mesh);
 				cursor.group.add(cursor.angleHatching);
 			}
-			
+
 			cursor.start = cursor.segment.node2.mesh.position;
 			cursor.diff.subVectors(cursor.target, cursor.start);
 			cursor.segment.updateMesh();
 			cursor.angleHatching.position.copy(cursor.start);
 
 		};
-		
-		cursor.setDiam = function(diam){
+
+		cursor.setDiam = function (diam) {
 			cursor.segment.setDiameter(diam);
 			cursor.node.setScale();
-		}
+		};
 
 		cursor.update = function () {
 			if (cursor.start === undefined) { return; }
 			if (cursor.start.equals(cursor.target)) {
 				cursor.hide();
-			}else{
+			} else {
 				cursor.show();
 			}
 
 			cursor.segment.updateMesh();
-			
+
 			cursor.diff.subVectors(cursor.target, cursor.start);
 			cursor.angleHatching.geometry.vertices[1] = new THREE.Vector3(cursor.diff.x, 0, 0);
 			cursor.angleHatching.geometry.vertices[2] = new THREE.Vector3(cursor.diff.x, 0, cursor.diff.z);
@@ -332,11 +332,9 @@
 		};
 
 
-
-		console.log(cursor)
 		return cursor;
 	};
-	
+
 	////////////////////////////////////////////////////
 	// Selector
 
@@ -346,10 +344,10 @@
 			hoveredPipe: null,
 			hoveredNode: null
 		};
-		
-		selector.clearHovers = function (){
+
+		selector.clearHovers = function () {
 			// clear existing hovers
-			
+
 			if (selector.hoveredPipe !== null) {
 				if (selector.hoveredPipe.mesh.material.color.getHex() == 0x0000ff) {
 					selector.hoveredPipe.mesh.material.color.setHex(selector.hoveredPipe.color);
@@ -361,18 +359,18 @@
 					selector.hoveredNode.mesh.material.color.setHex(selector.hoveredNode.color);
 				}
 			}
-		}
-		
+		};
+
 		selector.updateHover = function (raycaster) {
 			var pipeIntersects = raycaster.intersectObjects(context.visiblePipes.children);
 			var nodeIntersects = raycaster.intersectObjects(context.visibleNodes.children);
 
-			selector.clearHovers()
-			
+			selector.clearHovers();
+
 			// color new hovers
 
 			if (pipeIntersects.length > 0) {
-				
+
 				selector.hoveredPipe = pipeIntersects[0].object.userData.owner;
 				if (selector.hoveredPipe.color == selector.hoveredPipe.mesh.material.color.getHex()) {
 					pipeIntersects[0].object.material.color.setHex(0x0000ff);
@@ -383,7 +381,7 @@
 			}
 
 			if (nodeIntersects.length > 0) {
-				
+
 				selector.hoveredNode = nodeIntersects[0].object.userData.owner;
 				if (selector.hoveredNode.color == selector.hoveredNode.mesh.material.color.getHex()) {
 					nodeIntersects[0].object.material.color.setHex(0x0000ff);
@@ -392,12 +390,12 @@
 			} else {
 				selector.hoveredNode = null;
 			}
-		}
-	
-		
-		
+		};
+
+
+
 		return selector;
-	}
+	};
 
 	////////////////////////////////////////////////////
 	// Mode Manager
@@ -481,7 +479,7 @@
 
 			context.positioner.clear();
 			context.positioner.positionSpecs.y = 0;
-			context.cursor.node.setScale(context.positioner.positionSpecs.diameter)
+			context.cursor.node.setScale(context.positioner.positionSpecs.diameter);
 
 			context.cursor.show();
 			context.positioner.show();
@@ -495,14 +493,14 @@
 		};
 
 		createMode.onClick = function (e) {
-			
+
 			if (context.selector.hoveredNode !== null) {
-				
+
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				context.drawMode.enter(context.selector.hoveredNode);
-			
+
 			} else if (context.selector.hoveredPipe !== null) {
-				
+					//do something?
 			} else {
 
 				var newNode = new PIPE.Node(context.cursor.target.clone());
@@ -525,8 +523,8 @@
 
 			var iPoint = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs);
 
-			context.selector.updateHover(raycaster)
-			
+			context.selector.updateHover(raycaster);
+
 			context.cursor.setTarget(iPoint);
 			context.positioner.onFrame();
 
@@ -564,7 +562,7 @@
 			}
 
 			context.positioner.clear();
-			context.positioner.positionSpecs.diameter = currNode.scale
+			context.positioner.positionSpecs.diameter = currNode.scale;
 
 			context.mode = drawMode;
 			this.state = "on";
@@ -585,20 +583,20 @@
 		};
 
 		drawMode.onClick = function (e) {
-			
+
 			var newNode;
-			
+
 			if (context.selector.hoveredNode !== null) {
-				
+
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff0000);
 				newNode = context.selector.hoveredNode;
-			
+
 			} else {
 
 				newNode = new PIPE.Node(context.cursor.target.clone());
 				context.model.nodes[newNode.uuid] = newNode;
 				context.visibleNodes.add(newNode.makeMesh());
-				
+
 			}
 
 			context.cursor.setStart();
@@ -622,7 +620,7 @@
 			context.selector.updateHover(raycaster);
 
 			if ((context.selector.hoveredNode !== null) && (context.selector.hoveredNode !== sourceNode)) {
-				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone())
+				context.cursor.setTarget(context.selector.hoveredNode.mesh.position.clone());
 			} else {
 				var pt = PIPE.calc.constrainedPoint(raycaster, context.positioner.positionSpecs, sourceNode.mesh.position.clone());
 				context.cursor.setTarget(pt);
@@ -637,18 +635,18 @@
 			if (k == 27) {
 				context.viewMode.enter();
 			} else {
-				var le = context.positioner.lengthElem
+				var le = context.positioner.lengthElem;
 				if (document.activeElement === le) {
-					return
+					return;
 				}
 				if (k >= 96 && k <= 105) {
 					k -= 48;  //make numpad and main numkey values match
 				}
-				if (k >= 48 && k <= 57 || k == 32 || k == 222) {
-					le.focus()
-					le.dispatchEvent(new Event('Focus'))
-					le.value = ""
-					
+				if ((k >= 48 && k <= 57) || k == 32 || k == 222) {
+					le.focus();
+					le.dispatchEvent(new Event('Focus'));
+					le.value = "";
+
 				}
 			}
 		};
@@ -670,7 +668,7 @@
 			if (context.mode) {
 				context.mode.leave();
 			}
-			
+
 			context.mode = viewMode;
 			this.state = "on";
 
@@ -697,7 +695,7 @@
 		return viewMode;
 
 	};
-	
+
 	////////////////////////////////////////////////////
 	// Define "Select Mode" behaviour
 
@@ -709,22 +707,22 @@
 			nodes: [],
 			pipes: []
 		};
-		
-				
+
+
 		selectMode.elem = document.getElementById("selected-objects");
 		selectMode.pElem = document.getElementById("selected-pipes");
 		selectMode.nElem = document.getElementById("selected-nodes");
-		
+
 
 		selectMode.enter = function () {
 
 			if (context.mode) {
 				context.mode.leave(true);
 			}
-			
+
 			context.mode = selectMode;
 			this.state = "on";
-			
+
 			context.positioner.hide();
 			context.modeManager.update();
 		};
@@ -734,106 +732,106 @@
 			this.state = "off";
 			context.mode = undefined;
 		};
-		
+
 		selectMode.addNode = function (sNode) {
 			var elem = document.createElement("div");
-			elem.classList.add("obj")
+			elem.classList.add("obj");
 			elem.innerHTML = "<span>" +
-							sNode.uuid.slice(0,8) + "</span><span>" + 
-							PIPE.calc.formatLength(sNode.position.x,context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.y,context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.z,context.units) + "</span>";
-			selectMode.nElem.appendChild(elem)
-			var typeSelector = document.createElement("select")
-			typeSelector.innerHTML = "<option value='node'>node</option>"+
-									 "<option value='gate'>gate</option>"+
-									 "<option value='globe'>globe</option>"
-			typeSelector.addEventListener("change",function(e){
-					sNode.switchType(e.target.value)
+							sNode.uuid.slice(0, 8) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.x, context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.y, context.units) + "</span><span>" +
+							PIPE.calc.formatLength(sNode.position.z, context.units) + "</span>";
+			selectMode.nElem.appendChild(elem);
+			var typeSelector = document.createElement("select");
+			typeSelector.innerHTML = "<option value='node'>node</option>" +
+									 "<option value='gate'>gate</option>" +
+									 "<option value='globe'>globe</option>";
+			typeSelector.addEventListener("change",
+				function (e) {
+					sNode.switchType(e.target.value);
 				},
-				false
-			)
-			typeSelector.value = sNode.nodeType
-			elem.appendChild(typeSelector)
-			
-			selectMode.nodes.push(sNode)
-		}
-		
+				false);
+			typeSelector.value = sNode.nodeType;
+			elem.appendChild(typeSelector);
+
+			selectMode.nodes.push(sNode);
+		};
+
 		selectMode.addPipe = function (sPipe) {
-			console.log(sPipe)
-			
+
 			var elem = document.createElement("div");
-			elem.classList.add("obj")
-			elem.innerHTML = "<span>" + 
-							sPipe.uuid.slice(0,8) + "</span><span>" +
-							sPipe.node1.uuid.slice(0,8) + "</span><span>" +
-							sPipe.node2.uuid.slice(0,8) + "</span><span>" +
-							PIPE.calc.formatLength(sPipe.length(),context.units) + "</span>";
-			
-			var diamSetter = document.createElement("input")
-			diamSetter.addEventListener("input",function(e){
-					var diam = PIPE.calc.parseLength(e.target.value,context.units)
-					sPipe.setDiameter(diam)
+			elem.classList.add("obj");
+			elem.innerHTML = "<span>" +
+							sPipe.uuid.slice(0, 8) + "</span><span>" +
+							sPipe.node1.uuid.slice(0, 8) + "</span><span>" +
+							sPipe.node2.uuid.slice(0, 8) + "</span><span>" +
+							PIPE.calc.formatLength(sPipe.length(), context.units) + "</span>";
+
+			var diamSetter = document.createElement("input");
+			diamSetter.addEventListener("input",
+				function (e) {
+					var diam = PIPE.calc.parseLength(e.target.value, context.units);
+					sPipe.setDiameter(diam);
 				},
-				false
-			)
-			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter,context.units)
-			
-			elem.appendChild(diamSetter)
-			selectMode.pElem.appendChild(elem)
-			selectMode.pipes.push(sPipe)
-		}
-		
-		selectMode.clearSelection = function(deleteSelected) {
+				false);
+
+			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter, context.units);
+
+			elem.appendChild(diamSetter);
+			selectMode.pElem.appendChild(elem);
+			selectMode.pipes.push(sPipe);
+		};
+
+		selectMode.clearSelection = function (deleteSelected) {
 			var i;
-			if (!deleteSelected){
-				for (i = 0; i<selectMode.nodes.length; i++){
-					selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color)
+			if (!deleteSelected) {
+				for (i = 0; i < selectMode.nodes.length; i++) {
+					selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color);
 				}
-				for (i = 0; i<selectMode.pipes.length; i++){
-					selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color)
+				for (i = 0; i < selectMode.pipes.length; i++) {
+					selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color);
 				}
 			} else {
-				for (i = 0; i<selectMode.nodes.length; i++){
+				for (i = 0; i < selectMode.nodes.length; i++) {
 					context.visibleNodes.remove(selectMode.nodes[i].mesh);
 					delete context.model.nodes[selectMode.nodes[i].uuid];
 				}
-				for (i = 0; i<selectMode.pipes.length; i++){
+				for (i = 0; i < selectMode.pipes.length; i++) {
 					context.visiblePipes.remove(selectMode.pipes[i].mesh);
 					delete context.model.pipes[selectMode.pipes[i].uuid];
 				}
 			}
-			
+
 			selectMode.pElem.innerHTML = "";
 			selectMode.nElem.innerHTML = "";
-			
-			selectMode.nodes = []
-			selectMode.pipes = []
-		}
+
+			selectMode.nodes = [];
+			selectMode.pipes = [];
+		};
 
 		selectMode.onClick = function () {
-			
+
 			var i;
-			
+
 			if (context.selector.hoveredNode !== null) {
-				
+
 				context.selector.hoveredNode.mesh.material.color.setHex(0xff00ff);
-				if (selectMode.nodes.indexOf(context.selector.hoveredNode) == -1){
-					selectMode.addNode(context.selector.hoveredNode)
+				if (selectMode.nodes.indexOf(context.selector.hoveredNode) == -1) {
+					selectMode.addNode(context.selector.hoveredNode);
 				}
-			
+
 			} else if (context.selector.hoveredPipe !== null) {
-			
+
 				context.selector.hoveredPipe.mesh.material.color.setHex(0xff00ff);
 				if (selectMode.pipes.indexOf(context.selector.hoveredPipe) == -1) {
 					selectMode.addPipe(context.selector.hoveredPipe);
 				}
-				
+
 			} else {
 
-				selectMode.clearSelection()
+				selectMode.clearSelection();
 			}
-			
+
 		};
 
 		selectMode.onKeyDown  = function (e) {
@@ -851,7 +849,7 @@
 
 			var raycaster = new THREE.Raycaster();
 			raycaster.setFromCamera(mouseVector.clone(), context.camera);
-			
+
 			context.selector.updateHover(raycaster);
 		};
 
@@ -883,7 +881,7 @@
 		this.model = new PIPE.Model();
 
 		this.mouseState = {x: 0, y: 0, right: false, left: false};
-		
+
 		this.units = "m"; //units used for display and input.  All calculations and storage based on meters.
 
 		this.modeManager = ModeManagerFactory(this);
@@ -913,7 +911,7 @@
 		var renderer;
 
 		if (window.WebGLRenderingContext) {
-			renderer = new THREE.WebGLRenderer({antialias:true});
+			renderer = new THREE.WebGLRenderer({antialias: true});
 		} else {
 			renderer = new THREE.CanvasRenderer();
 		}
@@ -1000,38 +998,36 @@
 				ctx.loadFromFile(file);
 			},
 			false);
-			
+
 		document.getElementById("bottom-right").addEventListener("click",
 			function (e) { e.stopPropagation(); },
-			false
-		);
-		
+			false);
+
 		document.getElementById("selected-objects").addEventListener("click",
 			function (e) { e.stopPropagation(); },
-			false
-		);
-			
+			false);
+
 		document.getElementById("unit-selector").addEventListener("change",
 			function (e) {
 				ctx.units = this.value;
 			},
 			false);
-			
+
 		document.getElementById("show-helpers").addEventListener("change",
-			function(e) {
-				ctx.setHelpers(this.value)
+			function (e) {
+				ctx.setHelpers(this.value);
 			},
 			false);
-			
+
 		document.getElementById("reset-view").addEventListener("click",
 			function (e) {
 				//var pos = new THREE.Vector3(-20, 20, 20);
 				//var lookAt = new THREE.Vector3();
-				
+
 				//ctx.setView(pos,lookAt);
-				ctx.centerView()
-			})
-			
+				ctx.centerView();
+			});
+
 		document.getElementById("camera-style").addEventListener("change",
 			function (e) {
 				ctx.setCamera(this.value);
@@ -1066,20 +1062,20 @@
 
 			this.visibleNodes = new THREE.Object3D();
 			this.scene.add(this.visibleNodes);
-			
-			this.helpers = {}
-			
+
+			this.helpers = {};
+
 			this.helpers.axisHelper = new THREE.AxisHelper(3);
 			this.scene.add(this.helpers.axisHelper);
-			
-			var north = new THREE.Vector3(1,0,0);
-			var arrowPosition = new THREE.Vector3(0,4,0);
-			this.helpers.northArrow = new THREE.ArrowHelper(north,arrowPosition,2,0xaa2222)
-			this.scene.add(this.helpers.northArrow)
-			
+
+			var north = new THREE.Vector3(1, 0, 0);
+			var arrowPosition = new THREE.Vector3(0, 4, 0);
+			this.helpers.northArrow = new THREE.ArrowHelper(north, arrowPosition, 2, 0xaa2222);
+			this.scene.add(this.helpers.northArrow);
+
 			var canvas1 = document.createElement('canvas');
-			canvas1.height = 300
-			canvas1.width = 260
+			canvas1.height = 300;
+			canvas1.width = 260;
 			var context1 = canvas1.getContext('2d');
 			context1.font = "Bold 300px Arial";
 			context1.fillStyle = "rgba(255,0,0,0.95)";
@@ -1087,11 +1083,11 @@
 			var texture1 = new THREE.Texture(canvas1);
 			texture1.minFilter = THREE.NearestFilter;
 			texture1.needsUpdate = true;
-			var spriteMaterial = new THREE.SpriteMaterial( { map: texture1, color: 0xaa2222} );
-			this.helpers.nSprite = new THREE.Sprite( spriteMaterial );
+			var spriteMaterial = new THREE.SpriteMaterial({ map: texture1, color: 0xaa2222});
+			this.helpers.nSprite = new THREE.Sprite(spriteMaterial);
 			this.helpers.nSprite.position.set(3, 4, 0);
 			this.scene.add(this.helpers.nSprite);
-			
+
 
 			var light = new THREE.DirectionalLight(0xffffff);
 			light.position.set(1, 1, 0);
@@ -1100,19 +1096,19 @@
 			var light2 = new THREE.DirectionalLight(0x606060);
 			light2.position.set(-1, -1, 0);
 			this.scene.add(light2);
-			
+
 			this.cameraO.up = new THREE.Vector3(0, 1, 0);
 			this.cameraP.up = new THREE.Vector3(0, 1, 0);
-			
-			this.setView(new THREE.Vector3(-20,20,20),new THREE.Vector3())
+
+			this.setView(new THREE.Vector3(-20, 20, 20), new THREE.Vector3());
 
 			this.controlsO = new THREE.OrbitControls(this.cameraO, this.container);
 			this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 			this.controlsO.enabled = false;
 			this.controlsP.enabled = false;
-			
-			this.helpers.bbHelper = new THREE.BoundingBoxHelper(this.visibleNodes,0x000000)
-			this.scene.add(this.helpers.bbHelper)
+
+			this.helpers.bbHelper = new THREE.BoundingBoxHelper(this.visibleNodes, 0x000000);
+			this.scene.add(this.helpers.bbHelper);
 
 			this.ctrlOtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
 			this.ctrlPtarget = new THREE.Mesh(new THREE.SphereGeometry(0.1));
@@ -1155,7 +1151,7 @@
 		},
 
 		clearDisplayElements: function () {
-			var ctx = this
+			var ctx = this;
 			THREE.Object3D.prototype.remove.apply(ctx.visiblePipes, ctx.visiblePipes.children);
 			THREE.Object3D.prototype.remove.apply(ctx.visibleNodes, ctx.visibleNodes.children);
 		},
@@ -1164,63 +1160,58 @@
 			this.clearDisplayElements();
 			this.model.clear();
 		},
-		
-		setView: function (position,lookAt) {
+
+		setView: function (position, lookAt) {
 			//position and lookAt are THREE.Vector3
-			var camOpos = new THREE.Vector3().subVectors(position,lookAt).normalize().multiplyScalar(1500).add(lookAt)
-			
-			
-			this.cameraO.position.copy(camOpos)
-			this.cameraP.position.copy(position)
-			this.cameraO.lookAt(lookAt)
-			this.cameraP.lookAt(lookAt)
-			this.controlsO.target.copy(lookAt)
-			this.controlsP.target.copy(lookAt)
+			var camOpos = new THREE.Vector3().subVectors(position, lookAt).normalize().multiplyScalar(1500).add(lookAt);
+
+			this.cameraO.position.copy(camOpos);
+			this.cameraP.position.copy(position);
+			this.cameraO.lookAt(lookAt);
+			this.cameraP.lookAt(lookAt);
+			this.controlsO.target.copy(lookAt);
+			this.controlsP.target.copy(lookAt);
 			this.cameraO.zoom = 1;
-			this.cameraO.updateProjectionMatrix()
+			this.cameraO.updateProjectionMatrix();
 		},
-		
-		centerView: function(){
-			var box = new THREE.Box3()
-			box.setFromObject(this.visibleNodes)
-			this.setView(box.center().add(new THREE.Vector3(-20,20,20)),box.center())
-			
+
+		centerView: function () {
+			var box = new THREE.Box3();
+			box.setFromObject(this.visibleNodes);
+			this.setView(box.center().add(new THREE.Vector3(-20, 20, 20)), box.center());
+
 			var size = box.size().length();
-			
+
 			var zoom;
-			
-			if (this.aspectRatio > 1){
-				zoom = this.orthoWidth/this.aspectRatio/size;
+
+			if (this.aspectRatio > 1) {
+				zoom = this.orthoWidth / this.aspectRatio / size;
 			} else {
-				zoom = this.orthoWidth/size;
+				zoom = this.orthoWidth / size;
 			}
-			
-			console.log(zoom)
-			
-			console.log(this.orthoWidth,this.aspectRatio,size)
-			
+
 			this.cameraO.zoom = zoom;
-			this.cameraO.updateProjectionMatrix()
-			
-			this.helpers.bbHelper.update()
-			
+			this.cameraO.updateProjectionMatrix();
+
+			this.helpers.bbHelper.update();
+
 		},
-		
+
 		setHelpers: function (helpers) {
-			if (helpers == "none"){
-				this.scene.remove(this.helpers.bbHelper)
-				this.scene.remove(this.helpers.northArrow)
-				this.scene.remove(this.helpers.nSprite)
-				this.scene.remove(this.helpers.axisHelper)
-				this.scene.remove(this.ctrlOtarget)
-				this.scene.remove(this.ctrlPtarget)
+			if (helpers == "none") {
+				this.scene.remove(this.helpers.bbHelper);
+				this.scene.remove(this.helpers.northArrow);
+				this.scene.remove(this.helpers.nSprite);
+				this.scene.remove(this.helpers.axisHelper);
+				this.scene.remove(this.ctrlOtarget);
+				this.scene.remove(this.ctrlPtarget);
 			} else if (helpers == "all") {
-				this.scene.add(this.helpers.bbHelper)
-				this.scene.add(this.helpers.northArrow)
-				this.scene.add(this.helpers.nSprite)
-				this.scene.add(this.helpers.axisHelper)
-				this.scene.add(this.ctrlOtarget)
-				this.scene.add(this.ctrlPtarget)
+				this.scene.add(this.helpers.bbHelper);
+				this.scene.add(this.helpers.northArrow);
+				this.scene.add(this.helpers.nSprite);
+				this.scene.add(this.helpers.axisHelper);
+				this.scene.add(this.ctrlOtarget);
+				this.scene.add(this.ctrlPtarget);
 			}
 		},
 
@@ -1247,7 +1238,7 @@
 				this.controlsP.target.copy(this.controlsO.target);
 				this.cameraP.lookAt(this.controlsO.target);
 				this.camera = this.cameraP;
-			} else if (camType == "o" && this.camera === this.cameraP){
+			} else if (camType == "o" && this.camera === this.cameraP) {
 				this.controlsO.target.copy(this.controlsP.target);
 				this.cameraO.lookAt(this.controlsP.target);
 				this.camera = this.cameraO;
