@@ -872,7 +872,7 @@
 		this.container = targetElem;
 		this.positioner = PositionerFactory(this);
 
-		this.cameraO = new THREE.OrthographicCamera(1, 1, 1, 1, 0.1, 1000);
+		this.cameraO = new THREE.OrthographicCamera(1, 1, 1, 1, 0.1, 3000);
 		this.cameraP = new THREE.PerspectiveCamera(15, 1, 0.1, 1000);
 		this.camera = this.cameraO;
 
@@ -1100,13 +1100,11 @@
 			var light2 = new THREE.DirectionalLight(0x606060);
 			light2.position.set(-1, -1, 0);
 			this.scene.add(light2);
-
-			this.cameraO.position.set(-20, 20, 20);
-			this.cameraP.position.set(-20, 20, 20);
+			
 			this.cameraO.up = new THREE.Vector3(0, 1, 0);
 			this.cameraP.up = new THREE.Vector3(0, 1, 0);
-			this.cameraO.lookAt(new THREE.Vector3(0, 0, 0));
-			this.cameraP.lookAt(new THREE.Vector3(0, 0, 0));
+			
+			this.setView(new THREE.Vector3(-20,20,20),new THREE.Vector3())
 
 			this.controlsO = new THREE.OrbitControls(this.cameraO, this.container);
 			this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
@@ -1169,7 +1167,10 @@
 		
 		setView: function (position,lookAt) {
 			//position and lookAt are THREE.Vector3
-			this.cameraO.position.copy(position)
+			var camOpos = new THREE.Vector3().subVectors(position,lookAt).normalize().multiplyScalar(1500).add(lookAt)
+			
+			
+			this.cameraO.position.copy(camOpos)
 			this.cameraP.position.copy(position)
 			this.cameraO.lookAt(lookAt)
 			this.cameraP.lookAt(lookAt)
