@@ -873,7 +873,7 @@
 		this.positioner = PositionerFactory(this);
 
 		this.cameraO = new THREE.OrthographicCamera(1, 1, 1, 1, 0.1, 3000);
-		this.cameraP = new THREE.PerspectiveCamera(15, 1, 0.1, 1000);
+		this.cameraP = new THREE.PerspectiveCamera(15, 1, 0.1, 3000);
 		this.camera = this.cameraO;
 
 		this.mode = undefined;
