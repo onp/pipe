@@ -87,7 +87,7 @@
 
 	// Segment //////////////////////////////////////////////////////////
 
-	PIPE.Segment = function (node1, node2, diameter, uuid) {
+	PIPE.Segment = function (node1, node2, diameter, uuid, name) {
 		this.node1 = node1;
 		this.node2 = node2 || new PIPE.Node(new THREE.Vector3());
 
@@ -96,6 +96,7 @@
 		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0x00ff00;
 		
+		this.name = name;
 		this.node1.addConnection(this);
 		this.node2.addConnection(this);
 
@@ -156,7 +157,7 @@
 
 		toJSON: function () {
 
-			return { node1: this.node1.uuid, node2: this.node2.uuid, d1: this.diameter, uuid: this.uuid };
+			return { node1: this.node1.uuid, node2: this.node2.uuid, d1: this.diameter, uuid: this.uuid, name: this.name };
 
 		}
 
@@ -165,11 +166,13 @@
 
 	// Node /////////////////////////////////////////////////////////////
 
-	PIPE.Node = function (position, uuid,type) {
+	PIPE.Node = function (position, uuid, type, name) {
 
 		this.position = position;
 		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0xff0000;
+		this.name = name;
+		
 		this.nodeType = type || "node";
 		this.connections = [];
 		this.scale = 1;
@@ -271,6 +274,7 @@
 			rep.uuid = this.uuid
 			rep.position = {north: this.position.x, elevation: this.position.y, east: this.position.z}
 			rep.type = this.nodeType
+			rep.name = this.name;
 			return rep;
 
 		}
