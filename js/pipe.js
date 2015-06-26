@@ -871,7 +871,7 @@
 		this.positioner = PositionerFactory(this);
 
 		this.cameraO = new THREE.OrthographicCamera(1, 1, 1, 1, 0.1, 3000);
-		this.cameraP = new THREE.PerspectiveCamera(15, 1, 0.1, 3000);
+		this.cameraP = new THREE.PerspectiveCamera(15, 1, 0.1, 8000);
 		this.camera = this.cameraO;
 
 		this.mode = undefined;
@@ -1099,13 +1099,13 @@
 
 			this.cameraO.up = new THREE.Vector3(0, 1, 0);
 			this.cameraP.up = new THREE.Vector3(0, 1, 0);
-
-			this.setView(new THREE.Vector3(-20, 20, 20), new THREE.Vector3());
-
+			
 			this.controlsO = new THREE.OrbitControls(this.cameraO, this.container);
 			this.controlsP =  new THREE.OrbitControls(this.cameraP, this.container);
 			this.controlsO.enabled = false;
 			this.controlsP.enabled = false;
+
+			this.setView(new THREE.Vector3(-20, 20, 20), new THREE.Vector3());
 
 			this.helpers.bbHelper = new THREE.BoundingBoxHelper(this.visibleNodes, 0x000000);
 			this.scene.add(this.helpers.bbHelper);
