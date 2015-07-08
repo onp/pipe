@@ -38,11 +38,18 @@
 	</div>
 	
 	<div id="selected-objects">
-		<div id="selected-nodes"></div>
-		<div id="selected-pipes"></div>
+		<div>
+			<h3>Nodes</h3>
+			<div id="selected-nodes"></div>
+		</div>
+		<div>
+			<h3>Segments</h3>
+			<div id="selected-pipes"></div>
+		</div>
 	</div>
 	
 	<div id="bottom-right">
+	
 		<select id="unit-selector">
 			<option value="m">meters</option>
 			<option value="fi">feet and inches</option>
@@ -55,7 +62,9 @@
 		<select id="show-helpers">
 			<option value="all">All Helpers</option>
 			<option value="none">No Helpers</option>
+			<option value="no-box">No Box</option>
 		</select>
+			
 	</div>
 	
 	<div id="menu-box">
@@ -77,7 +86,7 @@
                 <label for="z-pos">EAST</label>
             </div>
         </div>
-        <div id="delta-box"class="menu-group">
+        <div id="delta-box" class="menu-group">
             <p>Delta</p>
             <div class="y-box">
 				<span class="activator"></span>
@@ -86,7 +95,7 @@
             </div>
             <div class="x-box">
 				<span class="activator"></span>
-                <input type="text" id="x-delta"></input>
+                <input type="text" id="x-delta">
                 <label for="x-delta">NORTH</label>
             </div>
             <div class="z-box">

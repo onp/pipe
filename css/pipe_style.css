@@ -17,6 +17,11 @@ body{
 	height:100%;
 }
 
+
+.hidden{
+	display:none;
+}
+
 /* selected objects */
 /*=========================================*/
 
@@ -30,6 +35,8 @@ div#selected-objects div.obj{
 	display:flex;
 	justify-content: space-between;
 	width:500px;
+	border-top:1px solid black;
+	padding:3px;
 }
 
 /* bottom right */

@@ -87,7 +87,8 @@
 					positionSpecs.x  = undefined;
 					positionSpecs.y  = undefined;
 					positionSpecs.z  = undefined;
-					positionSpecs[dim] = 1;
+					positionSpecs.l = 1;
+
 				}
 
 				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
@@ -644,7 +645,15 @@
 				}
 				if ((k >= 48 && k <= 57) || k == 32 || k == 222) {
 					le.focus();
-					le.dispatchEvent(new Event('Focus'));
+					if (typeof window.Event == 'function'){
+						var ee = new Event('Focus')
+						
+					} else {
+						var ee = document.createEvent('FocusEvent')
+						ee.initFocusEvent('focus',true,true,null,5,le)
+					}
+					
+					le.dispatchEvent(ee);
 					le.value = "";
 
 				}
@@ -712,6 +721,9 @@
 		selectMode.elem = document.getElementById("selected-objects");
 		selectMode.pElem = document.getElementById("selected-pipes");
 		selectMode.nElem = document.getElementById("selected-nodes");
+		
+		selectMode.pElem.parentNode.classList.add("hidden")
+		selectMode.nElem.parentNode.classList.add("hidden")
 
 
 		selectMode.enter = function () {
@@ -734,6 +746,9 @@
 		};
 
 		selectMode.addNode = function (sNode) {
+			
+			selectMode.nElem.parentNode.classList.remove("hidden")
+			
 			var elem = document.createElement("div");
 			elem.classList.add("obj");
 			elem.innerHTML = "<span>" +
@@ -758,6 +773,8 @@
 		};
 
 		selectMode.addPipe = function (sPipe) {
+			
+			selectMode.pElem.parentNode.classList.remove("hidden")
 
 			var elem = document.createElement("div");
 			elem.classList.add("obj");
@@ -804,6 +821,9 @@
 
 			selectMode.pElem.innerHTML = "";
 			selectMode.nElem.innerHTML = "";
+			
+			selectMode.pElem.parentNode.classList.add("hidden")
+			selectMode.nElem.parentNode.classList.add("hidden")
 
 			selectMode.nodes = [];
 			selectMode.pipes = [];
@@ -1212,7 +1232,15 @@
 				this.scene.add(this.helpers.axisHelper);
 				this.scene.add(this.ctrlOtarget);
 				this.scene.add(this.ctrlPtarget);
+			}else if (helpers == "no-box") {
+				this.scene.remove(this.helpers.bbHelper);
+				this.scene.add(this.helpers.northArrow);
+				this.scene.add(this.helpers.nSprite);
+				this.scene.add(this.helpers.axisHelper);
+				this.scene.add(this.ctrlOtarget);
+				this.scene.add(this.ctrlPtarget);
 			}
+			
 		},
 
 		rebuildFromModel: function () {
