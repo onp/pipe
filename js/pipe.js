@@ -87,7 +87,8 @@
 					positionSpecs.x  = undefined;
 					positionSpecs.y  = undefined;
 					positionSpecs.z  = undefined;
-					positionSpecs[dim] = 1;
+					positionSpecs.l = 1;
+
 				}
 
 				posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
@@ -644,7 +645,15 @@
 				}
 				if ((k >= 48 && k <= 57) || k == 32 || k == 222) {
 					le.focus();
-					le.dispatchEvent(new Event('Focus'));
+					if (typeof window.Event == 'function'){
+						var ee = new Event('Focus')
+						
+					} else {
+						var ee = document.createEvent('FocusEvent')
+						ee.initFocusEvent('focus',true,true,null,5,le)
+					}
+					
+					le.dispatchEvent(ee);
 					le.value = "";
 
 				}
