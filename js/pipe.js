@@ -1223,7 +1223,15 @@
 				this.scene.add(this.helpers.axisHelper);
 				this.scene.add(this.ctrlOtarget);
 				this.scene.add(this.ctrlPtarget);
+			}else if (helpers == "no-box") {
+				this.scene.remove(this.helpers.bbHelper);
+				this.scene.add(this.helpers.northArrow);
+				this.scene.add(this.helpers.nSprite);
+				this.scene.add(this.helpers.axisHelper);
+				this.scene.add(this.ctrlOtarget);
+				this.scene.add(this.ctrlPtarget);
 			}
+			
 		},
 
 		rebuildFromModel: function () {
