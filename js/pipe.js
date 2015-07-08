@@ -712,6 +712,9 @@
 		selectMode.elem = document.getElementById("selected-objects");
 		selectMode.pElem = document.getElementById("selected-pipes");
 		selectMode.nElem = document.getElementById("selected-nodes");
+		
+		selectMode.pElem.parentNode.classList.add("hidden")
+		selectMode.nElem.parentNode.classList.add("hidden")
 
 
 		selectMode.enter = function () {
@@ -734,6 +737,9 @@
 		};
 
 		selectMode.addNode = function (sNode) {
+			
+			selectMode.nElem.parentNode.classList.remove("hidden")
+			
 			var elem = document.createElement("div");
 			elem.classList.add("obj");
 			elem.innerHTML = "<span>" +
@@ -758,6 +764,8 @@
 		};
 
 		selectMode.addPipe = function (sPipe) {
+			
+			selectMode.pElem.parentNode.classList.remove("hidden")
 
 			var elem = document.createElement("div");
 			elem.classList.add("obj");
@@ -804,6 +812,9 @@
 
 			selectMode.pElem.innerHTML = "";
 			selectMode.nElem.innerHTML = "";
+			
+			selectMode.pElem.parentNode.classList.add("hidden")
+			selectMode.nElem.parentNode.classList.add("hidden")
 
 			selectMode.nodes = [];
 			selectMode.pipes = [];
