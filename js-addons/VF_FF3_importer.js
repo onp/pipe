@@ -123,7 +123,7 @@
 
 			for (; i < lastElem; i++) {
 
-				nodes.push( raw[i].split(sep) )
+				nodes.push(raw[i].split(sep));
 
 			}
 
@@ -200,742 +200,791 @@
 	}
 
 
-VF_FF.displayTable = function () {
+	VF_FF.displayTable = function () {
 
-    if ((modelData === undefined )|| (elementHeaders === undefined)) { return }
+		if ((modelData === undefined )|| (elementHeaders === undefined)) { return }
 
-    var tableRep = ""
+		var tableRep = ""
 
-    tableRep += "<h1>Nodes</h1>"
+		tableRep += "<h1>Nodes</h1>"
 
-    for (elemType in elementHeaders) {
+		for (elemType in elementHeaders) {
 
-		if (elemType.slice(0,1) == "2") { continue }
+			if (elemType.slice(0,1) == "2") { continue }
 
-        tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
+			tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
 
-        tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
-        tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
 
-            for (var i=0; i < modelData.nodes.length; i++ ){
+				for (var i=0; i < modelData.nodes.length; i++ ){
 
-                if (modelData.nodes[i][0] == elemType ) {
-                    tableRep += "<tr><td>" + modelData.nodes[i].join("</td><td>") + "</td></tr>";
-                }
-            }
+					if (modelData.nodes[i][0] == elemType ) {
+						tableRep += "<tr><td>" + modelData.nodes[i].join("</td><td>") + "</td></tr>";
+					}
+				}
 
-        tableRep += "</table><p>results</p><table>"
+			tableRep += "</table><p>results</p><table>"
 
-        tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
-        tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
 
-            for (var i=0; i < modelData.rnodes.length; i++ ){
-                if (modelData.rnodes[i][0] == elemType ) {
-                    tableRep += "<tr><td>" + modelData.rnodes[i].join("</td><td>") + "</td></tr>";
-                }
-            }
+				for (var i=0; i < modelData.rnodes.length; i++ ){
+					if (modelData.rnodes[i][0] == elemType ) {
+						tableRep += "<tr><td>" + modelData.rnodes[i].join("</td><td>") + "</td></tr>";
+					}
+				}
 
-        tableRep += "</table>"
-
-    }
-
-    tableRep += "<h1>Pipes</h1>"
-
-    for (elemType in elementHeaders) {
-
-	if (elemType.slice(0,1) !== "2") { continue }
-
-        tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
-
-        tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
-        tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
-
-            for (var i=0; i < modelData.pipes.length; i++ ){
-                if (modelData.pipes[i][0] == elemType ) {
-                    tableRep += "<tr><td>" + modelData.pipes[i].join("</td><td>") + "</td></tr>";
-                }
-            }
-
-        tableRep += "</table><p>results</p><table>"
-
-        tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
-        tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
-
-            for (var i=0; i < modelData.rpipes.length; i++ ){
-                if (modelData.rpipes[i][0] == elemType ) {
-                    tableRep += "<tr><td>" + modelData.rpipes[i].join("</td><td>") + "</td></tr>";
-                }
-            }
-
-        tableRep += "</table>"
-
-    }
-
-
-
-    document.getElementById("data-tables").innerHTML = tableRep
-}
-
-
-
-
-VF_FF.createINI = function () {
-
-	if (iniData === undefined) {
-		console.log("no ini file info available")
-		return
-	}
-
-	iniData.save( function (dat) {
-
-		//iniData.Flowsheet.Height = String(~~(modelDataVF.maxY*1.2))
-		//iniData.Flowsheet.Width = String(~~(modelDataVF.maxX*1.2))
-
-
-		var blob = new Blob([dat], {type: "text/plain;charset=utf-8"});
-		saveAs(blob, "FFdata.INI");
-
-	})
-
-
-}
-
-
-VF_FF.createTXT = function (dSource) {
-
-	if (iniData === undefined) {
-		console.log("no ini file info available")
-		return
-	}
-
-
-	if (dSource === undefined) {
-		console.log("no data file info available")
-		return
-	}
-
-	var sep = iniData.get('ImportExportSettings.FieldSeparator').trim();
-
-	var i;
-
-	var rawTXT = "";
-
-	rawTXT += dSource.nodes.length + "\r\n";
-
-	for (i = 0; i<dSource.nodes.length; i++) {
-
-		rawTXT += dSource.nodes[i].join(sep) + '\r\n';
-
-	}
-
-
-	rawTXT += dSource.pipes.length + "\r\n";
-
-	for (i = 0; i<dSource.pipes.length; i++) {
-
-		rawTXT += dSource.pipes[i].join(sep) + '\r\n';
-
-	}
-
-
-	rawTXT += dSource.notes.length + "\r\n";
-
-	for (i = 0; i<dSource.notes.length; i++) {
-
-		rawTXT += dSource.notes[i].join(sep) + '\r\n';
-
-	}
-
-
-	rawTXT += dSource.rnodes.length + "\r\n";
-
-	for (i = 0; i<dSource.rnodes.length; i++) {
-
-		rawTXT += dSource.rnodes[i].join(sep) + '\r\n';
-
-	}
-
-
-	rawTXT += dSource.rpipes.length + "\r\n";
-
-	for (i = 0; i<dSource.rpipes.length; i++) {
-
-		rawTXT += dSource.rpipes[i].join(sep) + '\r\n';
-
-	}
-
-
-	rawTXT += dSource.rnotes.length + "\r\n";
-
-	for (i = 0; i<dSource.rnotes.length; i++) {
-
-		rawTXT += dSource.rnotes[i].join(sep) + '\r\n';
-
-	}
-
-	var blob = new Blob([rawTXT], {type: "text/plain;charset=utf-8"});
-	saveAs(blob, "FFdata.TXT");
-
-}
-
-VF_FF.setNetworkPositions = function(refNode){
-	for (var i = 0; i < refNode.connections.length; i++){
-
-		var conn = refNode.connections[i]
-		var node,fwd;
-
-		if (conn.from === refNode){
-			//code if pipe is going from refNode.
-			if (conn.to.position){
-				conn.to.overspecified += 1;
-				continue
-			}
-			node = conn.to
-			fwd = 1;
-
-		} else {
-			//code if pipe is going to refNode.
-			if (conn.from.position){
-				conn.from.overspecified += 1;
-				continue
-			}
-			node = conn.from
-			fwd = -1;
-		}
-
-		if (conn.direction == "1"){
-			node.position = {
-				x: refNode.position.x,
-				y: refNode.position.y,
-				z: refNode.position.z + conn.distance*fwd,
-			}
-		} else if (conn.direction == "2"){
-			node.position = {
-				x: refNode.position.x,
-				y: refNode.position.y,
-				z: refNode.position.z - conn.distance*fwd,
-			}
-		} else if (conn.direction == "3"){
-			node.position = {
-				x: refNode.position.x + conn.distance*fwd,
-				y: refNode.position.y,
-				z: refNode.position.z,
-			}
-		} else if (conn.direction == "4"){
-			node.position = {
-				x: refNode.position.x - conn.distance*fwd,
-				y: refNode.position.y,
-				z: refNode.position.z,
-			}
-		} else if (conn.direction == "5"){
-			node.position = {
-				x: refNode.position.x,
-				y: refNode.position.y + conn.distance*fwd,
-				z: refNode.position.z,
-			}
-		} else if (conn.direction == "6"){
-			node.position = {
-				x: refNode.position.x,
-				y: refNode.position.y - conn.distance*fwd,
-				z: refNode.position.z,
-			}
-		} else {
-			console.log("unknown direction ",conn.direction)
-		}
-
-		setNetworkPositions(node)
-	}
-
-}
-
-
-
-VF_FF.processVFxl = function( f, secondCallback ) {
-
-	var fr = new FileReader();
-
-	fr.onload = function () {
-
-		var nodes  = [];
-		var pipes  = [];
-		var notes  = [];
-		var rnodes = [];
-		var rpipes = [];
-		var rnotes = [];
-
-		modelDataVF = { nodes:nodes,
-						pipes:pipes,
-						notes:notes,
-						rnodes:rnodes,
-						rpipes:rpipes,
-						rnotes:rnotes,
-						maxX: 0,
-						maxY: 0
-		}
-
-		var netNodes = {};
-		var netPipes = {};
-
-		networkData = {	nodes:netNodes,
-						pipes:netPipes
-		}
-
-        document.getElementById("vf-file-status").innerHTML = "VisualFlow file: " + f.name
-
-		var workbook = XLSX.read(fr.result, {type: 'binary'});
-
-		var pipeRaw = XLSX.utils.sheet_to_csv(workbook.Sheets["PipingClean"]).split("\n")
-		var nodeRaw = XLSX.utils.sheet_to_csv(workbook.Sheets["UnitClean"]).split("\n")
-
-		// Nodes
-
-		for (var i=1; i < nodeRaw.length; i++){
-
-			if (nodeRaw[i].length <= 1) { break }
-
-			var vfElem = nodeRaw[i].split(",")
-
-			var elemType = vfElem[4];
-
-			if (fromVF[elemType] ==  undefined){
-
-				console.log(elemType + "is not a recognized code.")
-
-				continue
-
-			}
-
-			if ( Number(vfElem[8]) > modelDataVF.maxX)  {
-
-				modelDataVF.maxX = Number(vfElem[8]);
-
-			}
-
-			if ( Number(vfElem[9]) > modelDataVF.maxY)  {
-
-				modelDataVF.maxX = Number(vfElem[9]);
-
-			}
-
-			var ffElem = fromVF[vfElem[4]](vfElem);
-
-			modelDataVF.nodes.push(ffElem)
-			networkData.nodes[vfElem[0]] = {
-
-				id:        vfElem[0],
-				name:      vfElem[1],  			// Unique Name
-				nodeType:  elemType,
-				elevation: Number(vfElem[5])*0.3048,  	// Elevation in m (vf is in feet)
-				flowsheet: {
-					x:        Number(vfElem[6]),  	// VF layout X
-					y:        Number(vfElem[7]),  	// VF layout Y
-				},
-				connections: [],
-				timesSpecified: 0
-
-
-			}
-
-
-
-
+			tableRep += "</table>"
 
 		}
 
-		// Pipes
+		tableRep += "<h1>Pipes</h1>"
 
-		for (var i=1; i < pipeRaw.length; i++){
+		for (elemType in elementHeaders) {
 
-			if (!pipeRaw[i]) { continue }
+		if (elemType.slice(0,1) !== "2") { continue }
 
-			var vfElem = pipeRaw[i].split(",")
+			tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
 
-			var ffElem = fromVF["201"](vfElem)
+			tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
 
-			modelDataVF.pipes.push(ffElem)
+				for (var i=0; i < modelData.pipes.length; i++ ){
+					if (modelData.pipes[i][0] == elemType ) {
+						tableRep += "<tr><td>" + modelData.pipes[i].join("</td><td>") + "</td></tr>";
+					}
+				}
 
-			networkData.pipes[vfElem[0]] = {
+			tableRep += "</table><p>results</p><table>"
 
-				id:			vfElem[0],
-				name:		vfElem[1],    // Unique Name
-				from:	networkData.nodes[vfElem[3]],    // Node 1
-				to:		networkData.nodes[vfElem[2]],    // Node 2
-				distance:	Number(vfElem[4])*0.3048,    // Length in m
-				dNom:		vfElem[5],    // Nom. Dia
-				schedule:	vfElem[6],    // Schedule
-				direction: 	vfElem[8]
+			tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
+			tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
 
-			}
+				for (var i=0; i < modelData.rpipes.length; i++ ){
+					if (modelData.rpipes[i][0] == elemType ) {
+						tableRep += "<tr><td>" + modelData.rpipes[i].join("</td><td>") + "</td></tr>";
+					}
+				}
 
-			networkData.nodes[vfElem[2]].connections.push(networkData.pipes[vfElem[0]])
-			networkData.nodes[vfElem[3]].connections.push(networkData.pipes[vfElem[0]])
+			tableRep += "</table>"
 
 		}
 
 
 
-		//calculate absolute node positions
+		document.getElementById("data-tables").innerHTML = tableRep
+	}
 
-		for (nodeID in networkData.nodes){
-			var node = networkData.nodes[nodeID]
-			if (node.position){
-				continue
-			}
 
-			console.log(node)
-			console.log(node.id+" was not attached to the existing network. Assuming coordinates.")
 
-			node.position = {
-				x: 0,
-				y: 0,
-				z: node.elevation
-			}
 
-			setNetworkPositions(node)
+	VF_FF.createINI = function () {
 
+		if (iniData === undefined) {
+			// no ini data, can't create a file.
+			return
 		}
 
-		console.log(networkData)
+		iniData.save( function (dat) {
 
-		secondCallback()
+			//iniData.Flowsheet.Height = String(~~(modelDataVF.maxY*1.2))
+			//iniData.Flowsheet.Width = String(~~(modelDataVF.maxX*1.2))
 
+
+			var blob = new Blob([dat], {type: "text/plain;charset=utf-8"});
+			saveAs(blob, "FFdata.INI");
+
+		})
 
 
 	}
 
-	fr.readAsArrayBuffer(f);
 
+	VF_FF.createTXT = function (dSource) {
 
-}
+		if (iniData === undefined) {
+			// no ini data available for formatting, can't create TXT.
+			return
+		}
 
 
+		if (dSource === undefined) {
+			// no data was passed, cannot create file
+			return
+		}
 
-VF_FF.fromVF = {
+		var sep = iniData.get('ImportExportSettings.FieldSeparator').trim();
 
-	"201": function (vfElem) {
-		//pipe: Steel
+		var i;
 
+		var rawTXT = "";
 
-		var newElem = ffDefaults["201"].slice()
+		rawTXT += dSource.nodes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[8] = vfElem[1];    // Unique Name
-		newElem[6] = vfElem[2];    // Node 1
-		newElem[7] = vfElem[3];    // Node 2
-		newElem[10] = vfElem[4];    // Length
-		newElem[14] = vfElem[5];    // Nom. Dia
-		newElem[15] = vfElem[6];    // Schedule
-		newElem[66] = vfElem[7];    // Nom. Size ID
+		for (i = 0; i<dSource.nodes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.nodes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"301": function (vfElem) {
-		//Boundary: Known pressure
 
-		var newElem = ffDefaults["301"].slice()
+		rawTXT += dSource.pipes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
-		newElem[11] = vfElem[13];    // Known Pressure
-		newElem[12] = unitLookup[vfElem[14]];    // Pressure Unit
-		newElem[13] = vfElem[15];    // Temperature
-		newElem[14] = unitLookup[vfElem[16]];    // Temperature Unit
+		for (i = 0; i<dSource.pipes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.pipes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"302": function (vfElem) {
-		//Boundary: Known flow
 
-		var newElem = ffDefaults["302"].slice()
+		rawTXT += dSource.notes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
-		newElem[11] = vfElem[11];    // Known Flow
-		newElem[12] = unitLookup[vfElem[12]];    // Flow Unit
-		newElem[10] = (vfElem[3] == "Outlet") ? "1" : "-1"   //flow direction, "1" indicates outwards flow
-		newElem[13] = vfElem[15] || newElem[13];    // Temperature
-		newElem[14] = unitLookup[vfElem[16]] || newElem[14];    // Temperature Unit
+		for (i = 0; i<dSource.notes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.notes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"304": function (vfElem) {
-		//Boundary: Open pipe
 
-		var newElem = ffDefaults["304"].slice()
+		rawTXT += dSource.rnodes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+		for (i = 0; i<dSource.rnodes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.rnodes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"402": function (vfElem) {
-		//Junction: Elbow
 
-		var newElem = ffDefaults["402"].slice()
+		rawTXT += dSource.rpipes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+		for (i = 0; i<dSource.rpipes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.rpipes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"405": function (vfElem) {
-		//Junction: Tee
 
-		var newElem = ffDefaults["405"].slice()
+		rawTXT += dSource.rnotes.length + "\r\n";
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
-		newElem[12] = vfElem[10];  // Branch Pipe
+		for (i = 0; i<dSource.rnotes.length; i++) {
 
-		return newElem
+			rawTXT += dSource.rnotes[i].join(sep) + '\r\n';
 
-	},
+		}
 
-	"408": function (vfElem) {
-		//Junction: Cross
+		var blob = new Blob([rawTXT], {type: "text/plain;charset=utf-8"});
+		saveAs(blob, "FFdata.TXT");
 
-		var newElem = ffDefaults["408"].slice()
+	}
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+	VF_FF.setNetworkPositions = function(refNode){
+		for (var i = 0; i < refNode.connections.length; i++){
 
-		return newElem
+			var conn = refNode.connections[i]
+			var node,fwd;
 
-	},
+			if (conn.from === refNode){
+				//code if pipe is going from refNode.
+				if (conn.to.position){
+					conn.to.overspecified += 1;
+					continue
+				}
+				node = conn.to
+				fwd = 1;
 
-	"501": function (vfElem) {
-		//Pump: Centrifugal
+			} else {
+				//code if pipe is going to refNode.
+				if (conn.from.position){
+					conn.from.overspecified += 1;
+					continue
+				}
+				node = conn.from
+				fwd = -1;
+			}
+
+			if (conn.direction == "1"){
+				node.position = {
+					x: refNode.position.x,
+					y: refNode.position.y,
+					z: refNode.position.z + conn.distance*fwd,
+				}
+			} else if (conn.direction == "2"){
+				node.position = {
+					x: refNode.position.x,
+					y: refNode.position.y,
+					z: refNode.position.z - conn.distance*fwd,
+				}
+			} else if (conn.direction == "3"){
+				node.position = {
+					x: refNode.position.x + conn.distance*fwd,
+					y: refNode.position.y,
+					z: refNode.position.z,
+				}
+			} else if (conn.direction == "4"){
+				node.position = {
+					x: refNode.position.x - conn.distance*fwd,
+					y: refNode.position.y,
+					z: refNode.position.z,
+				}
+			} else if (conn.direction == "5"){
+				node.position = {
+					x: refNode.position.x,
+					y: refNode.position.y + conn.distance*fwd,
+					z: refNode.position.z,
+				}
+			} else if (conn.direction == "6"){
+				node.position = {
+					x: refNode.position.x,
+					y: refNode.position.y - conn.distance*fwd,
+					z: refNode.position.z,
+				}
+			} else {
+				console.warn("unknown direction "+conn.direction)
+			}
 
-		var newElem = ffDefaults["501"].slice()
+			VF_FF.setNetworkPositions(node)
+		}
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+	}
 
-		return newElem
 
-	},
 
-	"601": function (vfElem) {
-		//Valve: Butterfly
+	VF_FF.processVFxl = function(f,context) {
 
-		var newElem = ffDefaults["601"].slice()
+		var fr = new FileReader();
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+		fr.onload = function () {
 
-		return newElem
+			// object definition data
+			var nodes  = [];
+			var pipes  = [];
+			var notes  = [];
+			// results data
+			var rnodes = [];
+			var rpipes = [];
+			var rnotes = [];
 
-	},
+			var modelDataVF = { 
+				nodes:nodes,
+				pipes:pipes,
+				notes:notes,
+				rnodes:rnodes,
+				rpipes:rpipes,
+				rnotes:rnotes,
+				maxX: 0,
+				maxY: 0
+			}
 
-	"603": function (vfElem) {
-		//Valve: Ball
+			var netNodes = {};
+			var netPipes = {};
 
-		var newElem = ffDefaults["603"].slice()
+			var networkData = {	nodes:netNodes,
+								pipes:netPipes
+			}
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+			var workbook = XLSX.read(fr.result, {type: 'binary'});
 
-		return newElem
+			var nodeRaw = XLSX.utils.sheet_to_csv(workbook.Sheets["UnitClean"]).split("\n")
+			var PIPEaw = XLSX.utils.sheet_to_csv(workbook.Sheets["PipingClean"]).split("\n")
 
-	},
+			// Nodes
 
-	"604": function (vfElem) {
-		//Valve: Gate
+			for (var i=1; i < nodeRaw.length; i++){
 
-		var newElem = ffDefaults["604"].slice()
+				if (nodeRaw[i].length <= 1) { break }
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+				var vfElem = nodeRaw[i].split(",")
+				var elemType = vfElem[4];
 
-		return newElem
+				if (fromVF[elemType] ==  undefined){
 
-	},
+					console.warn(elemType + "is not a recognized code.")
 
-	"605": function (vfElem) {
-		//Valve: Globe
+					continue
 
-		var newElem = ffDefaults["605"].slice()
+				}
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+				if ( Number(vfElem[8]) > modelDataVF.maxX)  {
 
-		return newElem
+					modelDataVF.maxX = Number(vfElem[8]);
 
-	},
+				}
 
-	"801": function (vfElem) {
-		//Valve: Gate
+				if ( Number(vfElem[9]) > modelDataVF.maxY)  {
 
-		var newElem = ffDefaults["801"].slice()
+					modelDataVF.maxX = Number(vfElem[9]);
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+				}
 
-		return newElem
+				var ffElem = VF_FF.fromVF[vfElem[4]](vfElem);
 
-	},
+				modelDataVF.nodes.push(ffElem)
+				networkData.nodes[vfElem[0]] = {
 
-	"901": function (vfElem) {
-		//GeneralResistances: K
+					id:        vfElem[0],
+					name:      vfElem[1],  			// Unique Name
+					nodeType:  elemType,
+					elevation: Number(vfElem[5])*0.3048,  	// Elevation in m (vf is in feet)
+					flowsheet: {
+						x:        Number(vfElem[6]),  	// VF layout X
+						y:        Number(vfElem[7]),  	// VF layout Y
+					},
+					connections: [],
+					timesSpecified: 0
 
-		var newElem = ffDefaults["901"].slice()
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
-		newElem[11] = vfElem[17];    // K Value
-		newElem[19] = vfElem[18];    // Heat Duty
-		newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+				}
 
-		return newElem
 
-	},
 
-	"1005": function (vfElem) {
-		//Size Change: Reducer
 
-		var newElem = ffDefaults["1005"].slice()
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+			}
 
-		return newElem
+			// Pipes
 
-	},
+			for (var i=1; i < PIPEaw.length; i++){
 
-	"1006": function (vfElem) {
-		//Size Change: Abrupt
+				if (!PIPEaw[i]) { continue }
 
-		var newElem = ffDefaults["1006"].slice()
+				var vfElem = PIPEaw[i].split(",")
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
+				var ffElem = VF_FF.fromVF["201"](vfElem)
 
-		return newElem
+				modelDataVF.pipes.push(ffElem)
 
-	},
+				networkData.pipes[vfElem[0]] = {
 
-// "1201": function (vfElem) {
-		//Heat Exchanger
+					id:			vfElem[0],
+					name:		vfElem[1],    // Unique Name
+					from:	networkData.nodes[vfElem[3]],    // Node 1
+					to:		networkData.nodes[vfElem[2]],    // Node 2
+					distance:	Number(vfElem[4])*0.3048,    // Length in m
+					dNom:		vfElem[5],    // Nom. Dia
+					schedule:	vfElem[6],    // Schedule
+					direction: 	vfElem[8]
 
-		// var newElem = ffDefaults["1201"].slice()
+				}
 
-		// newElem[1] = vfElem[0];    // Component Number
-		// newElem[6] = vfElem[1];    // Unique Name
-		// newElem[8] = vfElem[5];    // Elevation
-		// newElem[2] = vfElem[6];    // X1
-		// newElem[3] = vfElem[7];    // Y1
-		// newElem[4] = vfElem[8];    // X2
-		// newElem[5] = vfElem[9];    // Y2
+				networkData.nodes[vfElem[2]].connections.push(networkData.pipes[vfElem[0]])
+				networkData.nodes[vfElem[3]].connections.push(networkData.pipes[vfElem[0]])
 
-		// return newElem
+			}
 
-	// },
 
-	"1201": function (vfElem) {
-		//Heat Exchanger imported as General K resistance
 
-		var newElem = ffDefaults["901"].slice()
+			//calculate absolute node positions
 
-		newElem[1] = vfElem[0];    // Component Number
-		newElem[6] = vfElem[1];    // Unique Name
-		newElem[8] = vfElem[5];    // Elevation
-		newElem[2] = vfElem[6];    // X1
-		newElem[3] = vfElem[7];    // Y1
-		newElem[4] = vfElem[8];    // X2
-		newElem[5] = vfElem[9];    // Y2
-		newElem[11] = vfElem[17];    // K Value
-		newElem[19] = vfElem[18];    // Heat Duty
-		newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+			for (nodeID in networkData.nodes){
+				var node = networkData.nodes[nodeID]
+				if (node.position){
+					continue
+				}
 
-		return newElem
+				console.log(node.id+" was not attached to the existing network. Assuming coordinates.")
 
-	},
+				node.position = {
+					x: 0,
+					y: 0,
+					z: node.elevation
+				}
 
-}
+				VF_FF.setNetworkPositions(node)
+
+			}
+			
+			//add nodes to the model
+
+			for (var nodeID in networkData.nodes){
+				
+				var newNodeData = networkData.nodes[nodeID]
+				
+				var newNodePosition = new THREE.Vector3(newNodeData.position.x,
+														newNodeData.position.y,
+														newNodeData.position.z)
+				
+				var newNode = new PIPE.Node(newNodePosition,undefined,newNodeData.name,newNodeData.nodeType);
+				
+				context.model.nodes[newNode.uuid] = newNode;
+				
+				networkData.nodes[nodeID].threeElem = newNode
+	
+				visibleNodes.add(newNode.makeMesh());
+				
+			}
+			
+			//add pipes to the model
+
+			for (var pipeID in networkData.pipes){
+				
+				var newPipeData = networkData.pipes[pipeID]
+				
+				var newPipe = new PIPE.Segment(newPipeData.from.threeElem,newPipeData.to.threeElem,undefined,undefined,newPipeData.name);
+				
+				context.model.pipes[newPipe.uuid] = newPipe;
+				
+				networkData.pipes[pipeID].threeElem = newPipe
+	
+				visiblePipes.add(newPipe.makeMesh());
+				
+			}
+
+		}
+
+		fr.readAsArrayBuffer(f);
+
+
+	}
+
+
+
+	VF_FF.fromVF = {
+
+		"201": function (vfElem) {
+			//pipe: Steel
+
+
+			var newElem = ffDefaults["201"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[8] = vfElem[1];    // Unique Name
+			newElem[6] = vfElem[2];    // Node 1
+			newElem[7] = vfElem[3];    // Node 2
+			newElem[10] = vfElem[4];    // Length
+			newElem[14] = vfElem[5];    // Nom. Dia
+			newElem[15] = vfElem[6];    // Schedule
+			newElem[66] = vfElem[7];    // Nom. Size ID
+
+			return newElem
+
+		},
+
+		"301": function (vfElem) {
+			//Boundary: Known pressure
+
+			var newElem = ffDefaults["301"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+			newElem[11] = vfElem[13];    // Known Pressure
+			newElem[12] = unitLookup[vfElem[14]];    // Pressure Unit
+			newElem[13] = vfElem[15];    // Temperature
+			newElem[14] = unitLookup[vfElem[16]];    // Temperature Unit
+
+			return newElem
+
+		},
+
+		"302": function (vfElem) {
+			//Boundary: Known flow
+
+			var newElem = ffDefaults["302"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+			newElem[11] = vfElem[11];    // Known Flow
+			newElem[12] = unitLookup[vfElem[12]];    // Flow Unit
+			newElem[10] = (vfElem[3] == "Outlet") ? "1" : "-1"   //flow direction, "1" indicates outwards flow
+			newElem[13] = vfElem[15] || newElem[13];    // Temperature
+			newElem[14] = unitLookup[vfElem[16]] || newElem[14];    // Temperature Unit
+
+			return newElem
+
+		},
+
+		"304": function (vfElem) {
+			//Boundary: Open pipe
+
+			var newElem = ffDefaults["304"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"402": function (vfElem) {
+			//Junction: Elbow
+
+			var newElem = ffDefaults["402"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"405": function (vfElem) {
+			//Junction: Tee
+
+			var newElem = ffDefaults["405"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+			newElem[12] = vfElem[10];  // Branch Pipe
+
+			return newElem
+
+		},
+
+		"408": function (vfElem) {
+			//Junction: Cross
+
+			var newElem = ffDefaults["408"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"501": function (vfElem) {
+			//Pump: Centrifugal
+
+			var newElem = ffDefaults["501"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"601": function (vfElem) {
+			//Valve: Butterfly
+
+			var newElem = ffDefaults["601"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"603": function (vfElem) {
+			//Valve: Ball
+
+			var newElem = ffDefaults["603"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"604": function (vfElem) {
+			//Valve: Gate
+
+			var newElem = ffDefaults["604"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"605": function (vfElem) {
+			//Valve: Globe
+
+			var newElem = ffDefaults["605"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"801": function (vfElem) {
+			//Valve: Gate
+
+			var newElem = ffDefaults["801"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"901": function (vfElem) {
+			//GeneralResistances: K
+
+			var newElem = ffDefaults["901"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+			newElem[11] = vfElem[17];    // K Value
+			newElem[19] = vfElem[18];    // Heat Duty
+			newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+
+			return newElem
+
+		},
+
+		"1005": function (vfElem) {
+			//Size Change: Reducer
+
+			var newElem = ffDefaults["1005"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+		"1006": function (vfElem) {
+			//Size Change: Abrupt
+
+			var newElem = ffDefaults["1006"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+
+			return newElem
+
+		},
+
+	// "1201": function (vfElem) {
+			//Heat Exchanger
+
+			// var newElem = ffDefaults["1201"].slice()
+
+			// newElem[1] = vfElem[0];    // Component Number
+			// newElem[6] = vfElem[1];    // Unique Name
+			// newElem[8] = vfElem[5];    // Elevation
+			// newElem[2] = vfElem[6];    // X1
+			// newElem[3] = vfElem[7];    // Y1
+			// newElem[4] = vfElem[8];    // X2
+			// newElem[5] = vfElem[9];    // Y2
+
+			// return newElem
+
+		// },
+
+		"1201": function (vfElem) {
+			//Heat Exchanger imported as General K resistance
+
+			var newElem = ffDefaults["901"].slice()
+
+			newElem[1] = vfElem[0];    // Component Number
+			newElem[6] = vfElem[1];    // Unique Name
+			newElem[8] = vfElem[5];    // Elevation
+			newElem[2] = vfElem[6];    // X1
+			newElem[3] = vfElem[7];    // Y1
+			newElem[4] = vfElem[8];    // X2
+			newElem[5] = vfElem[9];    // Y2
+			newElem[11] = vfElem[17];    // K Value
+			newElem[19] = vfElem[18];    // Heat Duty
+			newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+
+			return newElem
+
+		},
+
+	}
+	
+	
+// Process files
+	
+	console.log(window.PIPE)
+	
+	if (window.PIPE !== undefined){
+		
+		var loadVFxl = {}
+		
+		loadVFxl.test = /\.xls[xm]$/i
+		
+		loadVFxl.func = processVFxl
+		
+		PIPE.fileLoaders.push(loadVFxl)
+	}
+	
+	
+	
+	
 
 }(window.VF_FF = window.VF_FF || {}));
