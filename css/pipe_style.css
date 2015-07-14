@@ -34,7 +34,7 @@ div#selected-objects{
 div#selected-objects div.obj{
 	display:flex;
 	justify-content: space-between;
-	width:500px;
+	/*width:500px; */
 	border-top:1px solid black;
 	padding:3px;
 }

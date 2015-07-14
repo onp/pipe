@@ -404,40 +404,46 @@
 			}
 
 			if (conn.direction == "1"){
+				// Up
 				node.position = {
 					x: refNode.position.x,
-					y: refNode.position.y,
-					z: refNode.position.z + conn.distance*fwd,
+					y: refNode.position.y+ conn.distance*fwd,
+					z: refNode.position.z,
 				}
 			} else if (conn.direction == "2"){
+				// Down
 				node.position = {
 					x: refNode.position.x,
-					y: refNode.position.y,
-					z: refNode.position.z - conn.distance*fwd,
+					y: refNode.position.y - conn.distance*fwd,
+					z: refNode.position.z,
 				}
 			} else if (conn.direction == "3"){
+				// North
 				node.position = {
 					x: refNode.position.x + conn.distance*fwd,
 					y: refNode.position.y,
 					z: refNode.position.z,
 				}
 			} else if (conn.direction == "4"){
+				// South
 				node.position = {
 					x: refNode.position.x - conn.distance*fwd,
 					y: refNode.position.y,
 					z: refNode.position.z,
 				}
 			} else if (conn.direction == "5"){
+				// East
 				node.position = {
 					x: refNode.position.x,
-					y: refNode.position.y + conn.distance*fwd,
-					z: refNode.position.z,
+					y: refNode.position.y,
+					z: refNode.position.z + conn.distance*fwd,
 				}
 			} else if (conn.direction == "6"){
+				// West
 				node.position = {
 					x: refNode.position.x,
-					y: refNode.position.y - conn.distance*fwd,
-					z: refNode.position.z,
+					y: refNode.position.y,
+					z: refNode.position.z - conn.distance*fwd,
 				}
 			} else {
 				console.warn("unknown direction "+conn.direction)
@@ -497,7 +503,7 @@
 				var vfElem = nodeRaw[i].split(",")
 				var elemType = vfElem[4];
 
-				if (fromVF[elemType] ==  undefined){
+				if (VF_FF.fromVF[elemType] ==  undefined){
 
 					console.warn(elemType + "is not a recognized code.")
 
@@ -586,8 +592,8 @@
 
 				node.position = {
 					x: 0,
-					y: 0,
-					z: node.elevation
+					y: node.elevation,
+					z: 0
 				}
 
 				VF_FF.setNetworkPositions(node)
@@ -610,7 +616,7 @@
 				
 				networkData.nodes[nodeID].threeElem = newNode
 	
-				visibleNodes.add(newNode.makeMesh());
+				context.visibleNodes.add(newNode.makeMesh());
 				
 			}
 			
@@ -626,7 +632,7 @@
 				
 				networkData.pipes[pipeID].threeElem = newPipe
 	
-				visiblePipes.add(newPipe.makeMesh());
+				context.visiblePipes.add(newPipe.makeMesh());
 				
 			}
 
@@ -645,7 +651,7 @@
 			//pipe: Steel
 
 
-			var newElem = ffDefaults["201"].slice()
+			var newElem = VF_FF.ffDefaults["201"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[8] = vfElem[1];    // Unique Name
@@ -663,7 +669,7 @@
 		"301": function (vfElem) {
 			//Boundary: Known pressure
 
-			var newElem = ffDefaults["301"].slice()
+			var newElem = VF_FF.ffDefaults["301"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -673,9 +679,9 @@
 			newElem[4] = vfElem[8];    // X2
 			newElem[5] = vfElem[9];    // Y2
 			newElem[11] = vfElem[13];    // Known Pressure
-			newElem[12] = unitLookup[vfElem[14]];    // Pressure Unit
+			newElem[12] = VF_FF.unitLookup[vfElem[14]];    // Pressure Unit
 			newElem[13] = vfElem[15];    // Temperature
-			newElem[14] = unitLookup[vfElem[16]];    // Temperature Unit
+			newElem[14] = VF_FF.unitLookup[vfElem[16]];    // Temperature Unit
 
 			return newElem
 
@@ -684,7 +690,7 @@
 		"302": function (vfElem) {
 			//Boundary: Known flow
 
-			var newElem = ffDefaults["302"].slice()
+			var newElem = VF_FF.ffDefaults["302"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -694,10 +700,10 @@
 			newElem[4] = vfElem[8];    // X2
 			newElem[5] = vfElem[9];    // Y2
 			newElem[11] = vfElem[11];    // Known Flow
-			newElem[12] = unitLookup[vfElem[12]];    // Flow Unit
+			newElem[12] = VF_FF.unitLookup[vfElem[12]];    // Flow Unit
 			newElem[10] = (vfElem[3] == "Outlet") ? "1" : "-1"   //flow direction, "1" indicates outwards flow
 			newElem[13] = vfElem[15] || newElem[13];    // Temperature
-			newElem[14] = unitLookup[vfElem[16]] || newElem[14];    // Temperature Unit
+			newElem[14] = VF_FF.unitLookup[vfElem[16]] || newElem[14];    // Temperature Unit
 
 			return newElem
 
@@ -706,7 +712,7 @@
 		"304": function (vfElem) {
 			//Boundary: Open pipe
 
-			var newElem = ffDefaults["304"].slice()
+			var newElem = VF_FF.ffDefaults["304"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -723,7 +729,7 @@
 		"402": function (vfElem) {
 			//Junction: Elbow
 
-			var newElem = ffDefaults["402"].slice()
+			var newElem = VF_FF.ffDefaults["402"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -740,7 +746,7 @@
 		"405": function (vfElem) {
 			//Junction: Tee
 
-			var newElem = ffDefaults["405"].slice()
+			var newElem = VF_FF.ffDefaults["405"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -758,7 +764,7 @@
 		"408": function (vfElem) {
 			//Junction: Cross
 
-			var newElem = ffDefaults["408"].slice()
+			var newElem = VF_FF.ffDefaults["408"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -775,7 +781,7 @@
 		"501": function (vfElem) {
 			//Pump: Centrifugal
 
-			var newElem = ffDefaults["501"].slice()
+			var newElem = VF_FF.ffDefaults["501"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -792,7 +798,7 @@
 		"601": function (vfElem) {
 			//Valve: Butterfly
 
-			var newElem = ffDefaults["601"].slice()
+			var newElem = VF_FF.ffDefaults["601"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -809,7 +815,7 @@
 		"603": function (vfElem) {
 			//Valve: Ball
 
-			var newElem = ffDefaults["603"].slice()
+			var newElem = VF_FF.ffDefaults["603"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -826,7 +832,7 @@
 		"604": function (vfElem) {
 			//Valve: Gate
 
-			var newElem = ffDefaults["604"].slice()
+			var newElem = VF_FF.ffDefaults["604"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -843,7 +849,7 @@
 		"605": function (vfElem) {
 			//Valve: Globe
 
-			var newElem = ffDefaults["605"].slice()
+			var newElem = VF_FF.ffDefaults["605"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -860,7 +866,7 @@
 		"801": function (vfElem) {
 			//Valve: Gate
 
-			var newElem = ffDefaults["801"].slice()
+			var newElem = VF_FF.ffDefaults["801"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -877,7 +883,7 @@
 		"901": function (vfElem) {
 			//GeneralResistances: K
 
-			var newElem = ffDefaults["901"].slice()
+			var newElem = VF_FF.ffDefaults["901"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -888,7 +894,7 @@
 			newElem[5] = vfElem[9];    // Y2
 			newElem[11] = vfElem[17];    // K Value
 			newElem[19] = vfElem[18];    // Heat Duty
-			newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+			newElem[20] = VF_FF.unitLookup[vfElem[19]];    // Heat Units
 
 			return newElem
 
@@ -897,7 +903,7 @@
 		"1005": function (vfElem) {
 			//Size Change: Reducer
 
-			var newElem = ffDefaults["1005"].slice()
+			var newElem = VF_FF.ffDefaults["1005"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -914,7 +920,7 @@
 		"1006": function (vfElem) {
 			//Size Change: Abrupt
 
-			var newElem = ffDefaults["1006"].slice()
+			var newElem = VF_FF.ffDefaults["1006"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -931,7 +937,7 @@
 	// "1201": function (vfElem) {
 			//Heat Exchanger
 
-			// var newElem = ffDefaults["1201"].slice()
+			// var newElem = VF_FF.ffDefaults["1201"].slice()
 
 			// newElem[1] = vfElem[0];    // Component Number
 			// newElem[6] = vfElem[1];    // Unique Name
@@ -948,7 +954,7 @@
 		"1201": function (vfElem) {
 			//Heat Exchanger imported as General K resistance
 
-			var newElem = ffDefaults["901"].slice()
+			var newElem = VF_FF.ffDefaults["901"].slice()
 
 			newElem[1] = vfElem[0];    // Component Number
 			newElem[6] = vfElem[1];    // Unique Name
@@ -959,7 +965,7 @@
 			newElem[5] = vfElem[9];    // Y2
 			newElem[11] = vfElem[17];    // K Value
 			newElem[19] = vfElem[18];    // Heat Duty
-			newElem[20] = unitLookup[vfElem[19]];    // Heat Units
+			newElem[20] = VF_FF.unitLookup[vfElem[19]];    // Heat Units
 
 			return newElem
 
@@ -978,7 +984,7 @@
 		
 		loadVFxl.test = /\.xls[xm]$/i
 		
-		loadVFxl.func = processVFxl
+		loadVFxl.func = VF_FF.processVFxl
 		
 		PIPE.fileLoaders.push(loadVFxl)
 	}

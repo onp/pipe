@@ -780,8 +780,9 @@
 			elem.classList.add("obj");
 			elem.innerHTML = "<span>" +
 							sPipe.uuid.slice(0, 8) + "</span><span>" +
-							sPipe.node1.uuid.slice(0, 8) + "</span><span>" +
-							sPipe.node2.uuid.slice(0, 8) + "</span><span>" +
+							sPipe.name + "</span><span>" +
+							//sPipe.node1.uuid.slice(0, 8) + "</span><span>" +
+							//sPipe.node2.uuid.slice(0, 8) + "</span><span>" +
 							PIPE.calc.formatLength(sPipe.length(), context.units) + "</span>";
 
 			var diamSetter = document.createElement("input");
@@ -1297,6 +1298,7 @@
 			}
 		}
 		console.error("file type not recognized.")
+
 	}
 
 
