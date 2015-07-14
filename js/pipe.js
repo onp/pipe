@@ -1015,7 +1015,7 @@
 			function (e) {
 				e.stopPropagation();
 				var file = this.files[0];
-				ctx.loadFromFile(file);
+				PIPE.loadFromFile(file,ctx);
 			},
 			false);
 
@@ -1151,25 +1151,6 @@
 
 		},
 
-		loadFromFile: function (file) {
-
-			this.clearAll();
-
-			var reader = new FileReader();
-			var ctx = this;
-
-			reader.onload = function () {
-
-				ctx.model.loadJSON(reader.result);
-				ctx.rebuildFromModel();
-				ctx.centerView();
-
-			};
-
-			reader.readAsText(file);
-
-		},
-
 		clearDisplayElements: function () {
 			var ctx = this;
 			THREE.Object3D.prototype.remove.apply(ctx.visiblePipes, ctx.visiblePipes.children);
@@ -1277,6 +1258,46 @@
 
 
 	};
+	
+	var loadPipe = {}
+	
+	loadPipe.test = /\.pipe$/i
+	
+	loadPipe.func = function (file,ctx) {
+
+		var reader = new FileReader();
+
+		reader.onload = function () {
+
+			ctx.model.loadJSON(reader.result);
+			ctx.rebuildFromModel();
+			ctx.centerView();
+
+		};
+
+		reader.readAsText(file);
+
+	}
+	
+	PIPE.fileLoaders = [
+		loadPipe
+	];
+	
+	PIPE.loadFromFile = function (file,context){
+		
+		var i;
+		
+		context.clearAll();
+		
+		for (i=0; i<PIPE.fileLoaders.length; i++){
+			var ld = PIPE.fileLoaders[i];
+			if (ld.test.exec(file.name)){
+				ld.func(file,context);
+				return
+			}
+		}
+		console.error("file type not recognized.")
+	}
 
 
 
