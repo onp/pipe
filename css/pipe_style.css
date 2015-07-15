@@ -31,12 +31,8 @@ div#selected-objects{
     top:20px;
 }
 
-div#selected-objects div.obj{
-	display:flex;
-	justify-content: space-between;
-	/*width:500px; */
-	border-top:1px solid black;
-	padding:3px;
+div#selected-objects .obj > td{
+	padding:3px 5px;
 }
 
 /* bottom right */

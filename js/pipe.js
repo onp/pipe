@@ -749,14 +749,18 @@
 			
 			selectMode.nElem.parentNode.classList.remove("hidden")
 			
-			var elem = document.createElement("div");
+			var elem = document.createElement("tr");
 			elem.classList.add("obj");
-			elem.innerHTML = "<span>" +
-							sNode.uuid.slice(0, 8) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.x, context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.y, context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.z, context.units) + "</span>";
+			elem.innerHTML = "<td>" +
+							sNode.uuid.slice(0, 8) + "</td><td>" +
+							sNode.name + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.x, context.units) + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.y, context.units) + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.z, context.units) + 
+							"</td>";
+
 			selectMode.nElem.appendChild(elem);
+			
 			var typeSelector = document.createElement("select");
 			typeSelector.innerHTML = "<option value='node'>node</option>" +
 									 "<option value='gate'>gate</option>" +
@@ -767,7 +771,9 @@
 				},
 				false);
 			typeSelector.value = sNode.nodeType;
-			elem.appendChild(typeSelector);
+			var tsCont = document.createElement("td");
+			elem.appendChild(tsCont);
+			tsCont.appendChild(typeSelector);
 
 			selectMode.nodes.push(sNode);
 		};
@@ -776,15 +782,19 @@
 			
 			selectMode.pElem.parentNode.classList.remove("hidden")
 
-			var elem = document.createElement("div");
+			var elem = document.createElement("tr");
 			elem.classList.add("obj");
-			elem.innerHTML = "<span>" +
-							sPipe.uuid.slice(0, 8) + "</span><span>" +
-							sPipe.name + "</span><span>" +
-							//sPipe.node1.uuid.slice(0, 8) + "</span><span>" +
-							//sPipe.node2.uuid.slice(0, 8) + "</span><span>" +
-							PIPE.calc.formatLength(sPipe.length(), context.units) + "</span>";
+			elem.innerHTML = "<td>" +
+							sPipe.uuid.slice(0, 8) + "</td><td>" +
+							sPipe.name + "</td><td>" +
+							//sPipe.node1.uuid.slice(0, 8) + "</td><td>" +
+							//sPipe.node2.uuid.slice(0, 8) + "</td><td>" +
+							PIPE.calc.formatLength(sPipe.length(), context.units) +
+							"</td>";
 
+							
+			selectMode.pElem.appendChild(elem);
+			
 			var diamSetter = document.createElement("input");
 			diamSetter.addEventListener("input",
 				function (e) {
@@ -794,9 +804,10 @@
 				false);
 
 			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter, context.units);
-
-			elem.appendChild(diamSetter);
-			selectMode.pElem.appendChild(elem);
+			var dsCont = document.createElement("td");
+			elem.appendChild(dsCont);
+			dsCont.appendChild(diamSetter);
+			
 			selectMode.pipes.push(sPipe);
 		};
 
