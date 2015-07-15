@@ -1,7 +1,11 @@
 (function (VF_FF, undefined) {
 	"use strict";
 
-	var elementHeaders, iniData, modelData, modelDataVF, networkData;
+	var networkData;
+	
+	///////////////////////////////////////////////////////////////////////////
+	// data ///////////////////////////////////////////////////////////////////
+	
 
 	VF_FF.ffDefaults = {
 
@@ -45,339 +49,20 @@
 
 
 	};
-
-
-
-	VF_FF.processINI = function (f) {
-
-		var fr = new FileReader();
-
-		fr.onload = function () {
-
-			document.getElementById("ini-file-status").innerHTML = "INI file: " + f.name;
-
-			iniData = new SimpleIni(function () { return fr.result; }, {comments: ['; ']});
-
-			var elemData = {};
-
-			for (elemType in iniData.Properties) {
-
-				var processedData = {};
-
-				processedData.prop = iniData.Properties[elemType].split(";");
-				processedData.desc = iniData.Descriptions[elemType].split(";");
-				processedData.rprop = iniData.ResultProperties[elemType].split(";");
-				processedData.rdesc = iniData.ResultDescriptions[elemType].split(";");
-
-				//fix for an apparent inconsistency in output file format:
-				processedData.rprop.splice(1, 0, "0");
-				processedData.rdesc.splice(1, 0, "Component Number");
-				//end fix
-
-				elemData[elemType] = processedData;
-
-			}
-
-			elementHeaders = elemData;
-
-			displayTable();
-
-		};
-
-		fr.readAsText(f);
-
+	
+	VF_FF.ff_nomDiamLookup = {
+		
+	};
+	
+	VF_FF.ff_ScheduleLookup = {
+		
 	};
 
-	VF_FF.processTXT = function (f) {
-
-		var fr = new FileReader();
-
-		fr.onload = function () {
-
-			document.getElementById("data-file-status").innerHTML = "Data file: " + f.name;
-
-			var raw = fr.result.split("\r\n");
-
-			var nodes = [];
-			var pipes = [];
-			var notes = [];
-			var rnodes = [];
-			var rpipes = [];
-			var rnotes = [];
-
-			var i = 0;
-
-			var lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			var sep;
-
-			if (iniData) {
-				sep = iniData.get('ImportExportSettings.FieldSeparator').trim();
-			} else {
-				sep = "$%$%";
-			}
-
-
-
-			for (; i < lastElem; i++) {
-
-				nodes.push(raw[i].split(sep));
-
-			}
-
-
-			lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			for ( ; i < lastElem; i++) {
-
-				pipes.push( raw[i].split(sep) )
-
-			}
-
-
-			lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			for ( ; i < lastElem; i++) {
-
-				notes.push( raw[i].split(sep) )
-
-			}
-
-
-			lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			for ( ; i < lastElem; i++) {
-
-				rnodes.push( raw[i].split(sep) )
-
-			}
-
-			lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			for ( ; i < lastElem; i++) {
-
-				rpipes.push( raw[i].split(sep) )
-
-			}
-
-
-			lastElem = i + Number(raw[i]) + 1;
-
-			i += 1;
-
-			for ( ; i < lastElem; i++) {
-
-				rnotes.push( raw[i].split(sep) )
-
-			}
-
-
-			modelData = {  nodes:nodes,
-						pipes:pipes,
-						notes:notes,
-						rnodes:rnodes,
-						rpipes:rpipes,
-						rnotes:rnotes
-		}
-
-
-			displayTable();
-
-		}
-
-		fr.readAsText(f)
-
-	}
-
-
-	VF_FF.displayTable = function () {
-
-		if ((modelData === undefined )|| (elementHeaders === undefined)) { return }
-
-		var tableRep = ""
-
-		tableRep += "<h1>Nodes</h1>"
-
-		for (elemType in elementHeaders) {
-
-			if (elemType.slice(0,1) == "2") { continue }
-
-			tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
-
-			tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
-			tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
-
-				for (var i=0; i < modelData.nodes.length; i++ ){
-
-					if (modelData.nodes[i][0] == elemType ) {
-						tableRep += "<tr><td>" + modelData.nodes[i].join("</td><td>") + "</td></tr>";
-					}
-				}
-
-			tableRep += "</table><p>results</p><table>"
-
-			tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
-			tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
-
-				for (var i=0; i < modelData.rnodes.length; i++ ){
-					if (modelData.rnodes[i][0] == elemType ) {
-						tableRep += "<tr><td>" + modelData.rnodes[i].join("</td><td>") + "</td></tr>";
-					}
-				}
-
-			tableRep += "</table>"
-
-		}
-
-		tableRep += "<h1>Pipes</h1>"
-
-		for (elemType in elementHeaders) {
-
-		if (elemType.slice(0,1) !== "2") { continue }
-
-			tableRep += "<h2>" + elemType + "</h2><p>input</p><table>"
-
-			tableRep += "<tr><td>" + elementHeaders[elemType]["prop"].join("</td><td>") + "</td></tr>";
-			tableRep += "<tr><td>" + elementHeaders[elemType]["desc"].join("</td><td>") + "</td></tr>";
-
-				for (var i=0; i < modelData.pipes.length; i++ ){
-					if (modelData.pipes[i][0] == elemType ) {
-						tableRep += "<tr><td>" + modelData.pipes[i].join("</td><td>") + "</td></tr>";
-					}
-				}
-
-			tableRep += "</table><p>results</p><table>"
-
-			tableRep += "<tr><td>" + elementHeaders[elemType]["rprop"].join("</td><td>") + "</td></tr>";
-			tableRep += "<tr><td>" + elementHeaders[elemType]["rdesc"].join("</td><td>") + "</td></tr>";
-
-				for (var i=0; i < modelData.rpipes.length; i++ ){
-					if (modelData.rpipes[i][0] == elemType ) {
-						tableRep += "<tr><td>" + modelData.rpipes[i].join("</td><td>") + "</td></tr>";
-					}
-				}
-
-			tableRep += "</table>"
-
-		}
-
-
-
-		document.getElementById("data-tables").innerHTML = tableRep
-	}
-
-
-
-
-	VF_FF.createINI = function () {
-
-		if (iniData === undefined) {
-			// no ini data, can't create a file.
-			return
-		}
-
-		iniData.save( function (dat) {
-
-			//iniData.Flowsheet.Height = String(~~(modelDataVF.maxY*1.2))
-			//iniData.Flowsheet.Width = String(~~(modelDataVF.maxX*1.2))
-
-
-			var blob = new Blob([dat], {type: "text/plain;charset=utf-8"});
-			saveAs(blob, "FFdata.INI");
-
-		})
-
-
-	}
-
-
-	VF_FF.createTXT = function (dSource) {
-
-		if (iniData === undefined) {
-			// no ini data available for formatting, can't create TXT.
-			return
-		}
-
-
-		if (dSource === undefined) {
-			// no data was passed, cannot create file
-			return
-		}
-
-		var sep = iniData.get('ImportExportSettings.FieldSeparator').trim();
-
-		var i;
-
-		var rawTXT = "";
-
-		rawTXT += dSource.nodes.length + "\r\n";
-
-		for (i = 0; i<dSource.nodes.length; i++) {
-
-			rawTXT += dSource.nodes[i].join(sep) + '\r\n';
-
-		}
-
-
-		rawTXT += dSource.pipes.length + "\r\n";
-
-		for (i = 0; i<dSource.pipes.length; i++) {
-
-			rawTXT += dSource.pipes[i].join(sep) + '\r\n';
-
-		}
-
-
-		rawTXT += dSource.notes.length + "\r\n";
-
-		for (i = 0; i<dSource.notes.length; i++) {
-
-			rawTXT += dSource.notes[i].join(sep) + '\r\n';
-
-		}
-
-
-		rawTXT += dSource.rnodes.length + "\r\n";
-
-		for (i = 0; i<dSource.rnodes.length; i++) {
-
-			rawTXT += dSource.rnodes[i].join(sep) + '\r\n';
-
-		}
-
-
-		rawTXT += dSource.rpipes.length + "\r\n";
-
-		for (i = 0; i<dSource.rpipes.length; i++) {
-
-			rawTXT += dSource.rpipes[i].join(sep) + '\r\n';
-
-		}
-
-
-		rawTXT += dSource.rnotes.length + "\r\n";
-
-		for (i = 0; i<dSource.rnotes.length; i++) {
-
-			rawTXT += dSource.rnotes[i].join(sep) + '\r\n';
-
-		}
-
-		var blob = new Blob([rawTXT], {type: "text/plain;charset=utf-8"});
-		saveAs(blob, "FFdata.TXT");
-
-	}
-
+	
+	///////////////////////////////////////////////////////////////////////////
+	// functionality //////////////////////////////////////////////////////////
+	
+	
 	VF_FF.setNetworkPositions = function(refNode){
 		for (var i = 0; i < refNode.connections.length; i++){
 
@@ -404,50 +89,52 @@
 			}
 
 			if (conn.direction == "1"){
-				// Up
-				node.position = {
-					x: refNode.position.x,
-					y: refNode.position.y+ conn.distance*fwd,
-					z: refNode.position.z,
-				}
-			} else if (conn.direction == "2"){
 				// Down
 				node.position = {
 					x: refNode.position.x,
 					y: refNode.position.y - conn.distance*fwd,
 					z: refNode.position.z,
 				}
-			} else if (conn.direction == "3"){
-				// North
+			} else if (conn.direction == "2"){
+				// Up
 				node.position = {
-					x: refNode.position.x + conn.distance*fwd,
-					y: refNode.position.y,
+					x: refNode.position.x,
+					y: refNode.position.y + conn.distance*fwd,
 					z: refNode.position.z,
 				}
-			} else if (conn.direction == "4"){
+			} else if (conn.direction == "3"){
 				// South
 				node.position = {
 					x: refNode.position.x - conn.distance*fwd,
 					y: refNode.position.y,
 					z: refNode.position.z,
 				}
-			} else if (conn.direction == "5"){
-				// East
+			} else if (conn.direction == "4"){
+				// North
 				node.position = {
-					x: refNode.position.x,
+					x: refNode.position.x + conn.distance*fwd,
 					y: refNode.position.y,
-					z: refNode.position.z + conn.distance*fwd,
+					z: refNode.position.z,
 				}
-			} else if (conn.direction == "6"){
+			} else if (conn.direction == "5"){
 				// West
 				node.position = {
 					x: refNode.position.x,
 					y: refNode.position.y,
 					z: refNode.position.z - conn.distance*fwd,
 				}
+			} else if (conn.direction == "6"){
+				// East
+				node.position = {
+					x: refNode.position.x,
+					y: refNode.position.y,
+					z: refNode.position.z + conn.distance*fwd,
+				}
 			} else {
 				console.warn("unknown direction "+conn.direction)
 			}
+			
+			//console.log(node.elevation - node.position.y)
 
 			VF_FF.setNetworkPositions(node)
 		}
@@ -470,17 +157,6 @@
 			var rnodes = [];
 			var rpipes = [];
 			var rnotes = [];
-
-			var modelDataVF = { 
-				nodes:nodes,
-				pipes:pipes,
-				notes:notes,
-				rnodes:rnodes,
-				rpipes:rpipes,
-				rnotes:rnotes,
-				maxX: 0,
-				maxY: 0
-			}
 
 			var netNodes = {};
 			var netPipes = {};
@@ -511,21 +187,8 @@
 
 				}
 
-				if ( Number(vfElem[8]) > modelDataVF.maxX)  {
-
-					modelDataVF.maxX = Number(vfElem[8]);
-
-				}
-
-				if ( Number(vfElem[9]) > modelDataVF.maxY)  {
-
-					modelDataVF.maxX = Number(vfElem[9]);
-
-				}
-
 				var ffElem = VF_FF.fromVF[vfElem[4]](vfElem);
 
-				modelDataVF.nodes.push(ffElem)
 				networkData.nodes[vfElem[0]] = {
 
 					id:        vfElem[0],
@@ -557,8 +220,6 @@
 				var vfElem = PIPEaw[i].split(",")
 
 				var ffElem = VF_FF.fromVF["201"](vfElem)
-
-				modelDataVF.pipes.push(ffElem)
 
 				networkData.pipes[vfElem[0]] = {
 
