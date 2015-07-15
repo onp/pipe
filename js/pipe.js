@@ -749,14 +749,18 @@
 			
 			selectMode.nElem.parentNode.classList.remove("hidden")
 			
-			var elem = document.createElement("div");
+			var elem = document.createElement("tr");
 			elem.classList.add("obj");
-			elem.innerHTML = "<span>" +
-							sNode.uuid.slice(0, 8) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.x, context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.y, context.units) + "</span><span>" +
-							PIPE.calc.formatLength(sNode.position.z, context.units) + "</span>";
+			elem.innerHTML = "<td>" +
+							sNode.uuid.slice(0, 8) + "</td><td>" +
+							sNode.name + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.x, context.units) + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.y, context.units) + "</td><td>" +
+							PIPE.calc.formatLength(sNode.position.z, context.units) + 
+							"</td>";
+
 			selectMode.nElem.appendChild(elem);
+			
 			var typeSelector = document.createElement("select");
 			typeSelector.innerHTML = "<option value='node'>node</option>" +
 									 "<option value='gate'>gate</option>" +
@@ -767,7 +771,9 @@
 				},
 				false);
 			typeSelector.value = sNode.nodeType;
-			elem.appendChild(typeSelector);
+			var tsCont = document.createElement("td");
+			elem.appendChild(tsCont);
+			tsCont.appendChild(typeSelector);
 
 			selectMode.nodes.push(sNode);
 		};
@@ -776,14 +782,19 @@
 			
 			selectMode.pElem.parentNode.classList.remove("hidden")
 
-			var elem = document.createElement("div");
+			var elem = document.createElement("tr");
 			elem.classList.add("obj");
-			elem.innerHTML = "<span>" +
-							sPipe.uuid.slice(0, 8) + "</span><span>" +
-							sPipe.node1.uuid.slice(0, 8) + "</span><span>" +
-							sPipe.node2.uuid.slice(0, 8) + "</span><span>" +
-							PIPE.calc.formatLength(sPipe.length(), context.units) + "</span>";
+			elem.innerHTML = "<td>" +
+							sPipe.uuid.slice(0, 8) + "</td><td>" +
+							sPipe.name + "</td><td>" +
+							//sPipe.node1.uuid.slice(0, 8) + "</td><td>" +
+							//sPipe.node2.uuid.slice(0, 8) + "</td><td>" +
+							PIPE.calc.formatLength(sPipe.length(), context.units) +
+							"</td>";
 
+							
+			selectMode.pElem.appendChild(elem);
+			
 			var diamSetter = document.createElement("input");
 			diamSetter.addEventListener("input",
 				function (e) {
@@ -793,9 +804,10 @@
 				false);
 
 			diamSetter.value = PIPE.calc.formatLength(sPipe.diameter, context.units);
-
-			elem.appendChild(diamSetter);
-			selectMode.pElem.appendChild(elem);
+			var dsCont = document.createElement("td");
+			elem.appendChild(dsCont);
+			dsCont.appendChild(diamSetter);
+			
 			selectMode.pipes.push(sPipe);
 		};
 
@@ -1015,7 +1027,7 @@
 			function (e) {
 				e.stopPropagation();
 				var file = this.files[0];
-				ctx.loadFromFile(file);
+				PIPE.loadFromFile(file,ctx);
 			},
 			false);
 
@@ -1151,25 +1163,6 @@
 
 		},
 
-		loadFromFile: function (file) {
-
-			this.clearAll();
-
-			var reader = new FileReader();
-			var ctx = this;
-
-			reader.onload = function () {
-
-				ctx.model.loadJSON(reader.result);
-				ctx.rebuildFromModel();
-				ctx.centerView();
-
-			};
-
-			reader.readAsText(file);
-
-		},
-
 		clearDisplayElements: function () {
 			var ctx = this;
 			THREE.Object3D.prototype.remove.apply(ctx.visiblePipes, ctx.visiblePipes.children);
@@ -1277,6 +1270,47 @@
 
 
 	};
+	
+	var loadPipe = {}
+	
+	loadPipe.test = /\.pipe$/i
+	
+	loadPipe.func = function (file,ctx) {
+
+		var reader = new FileReader();
+
+		reader.onload = function () {
+
+			ctx.model.loadJSON(reader.result);
+			ctx.rebuildFromModel();
+			ctx.centerView();
+
+		};
+
+		reader.readAsText(file);
+
+	}
+	
+	PIPE.fileLoaders = [
+		loadPipe
+	];
+	
+	PIPE.loadFromFile = function (file,context){
+		
+		var i;
+		
+		context.clearAll();
+		
+		for (i=0; i<PIPE.fileLoaders.length; i++){
+			var ld = PIPE.fileLoaders[i];
+			if (ld.test.exec(file.name)){
+				ld.func(file,context);
+				return
+			}
+		}
+		console.error("file type not recognized.")
+
+	}
 
 
 
