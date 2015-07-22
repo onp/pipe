@@ -155,6 +155,13 @@
 				}
 			}
 		},
+		
+		breakConnections: function () {
+			
+			this.node1.removeConnection(this);
+			this.node2.removeConnection(this);
+			
+		},
 
 		toJSON: function () {
 
@@ -221,6 +228,15 @@
 				this.connections.push(newConnection);
 			}
 			this.setScale();
+		},
+		
+		removeConnection: function (connection) {
+			var idx = this.connections.indexOf(connection);
+			if (idx > -1) {
+				this.connections.splice(idx,1);
+				this.setScale();
+			}
+			
 		},
 
 		setScale: function (scale) {
