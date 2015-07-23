@@ -384,6 +384,7 @@
 			if (nodeIntersects.length > 0) {
 
 				selector.hoveredNode = nodeIntersects[0].object.userData.owner;
+				console.log(selector.hoveredNode.analyzeConnections())
 				if (selector.hoveredNode.color == selector.hoveredNode.mesh.material.color.getHex()) {
 					nodeIntersects[0].object.material.color.setHex(0x0000ff);
 				}
@@ -827,6 +828,7 @@
 				}
 				for (i = 0; i < selectMode.pipes.length; i++) {
 					context.visiblePipes.remove(selectMode.pipes[i].mesh);
+					context.model.pipes[selectMode.pipes[i].uuid].breakConnections();
 					delete context.model.pipes[selectMode.pipes[i].uuid];
 				}
 			}
