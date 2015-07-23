@@ -139,9 +139,23 @@
 		},
 
 		length: function () {
-			var diff = new THREE.Vector3();
-			diff.subVectors(this.node1.position, this.node2.position);
-			return diff.length();
+			return new THREE.Vector3().subVectors(this.node1.position, this.node2.position).length();
+		},
+		
+		getDirection: function (node) {
+			//get the normalized direction of the segment.
+			//optionally, the direction is defined from one of the two endpoints
+			var p1,p2;
+			if (this.node2 === node){
+				p1 = node.position
+				p2 = this.node1.position
+			} else {
+				p1 = this.node1.position
+				p2 = this.node2.position
+			}
+			
+			return new THREE.Vector3().subVectors(p1, p2).normalize()
+			
 		},
 
 		hide: function () {
@@ -235,6 +249,57 @@
 			if (idx > -1) {
 				this.connections.splice(idx,1);
 				this.setScale();
+			}
+			
+		},
+		
+		analyzeConnections: function () {
+			if (this.connections.length == 0){
+				return "orphan"
+			} else if (this.connections.length == 1){
+				return "dead end"
+			} else if (this.connections.length == 2){
+				var dir1 = this.connections[0].getDirection(this)
+				var dir2 = this.connections[1].getDirection(this)
+				var dot12 = new THREE.Vector3().copy(dir1).dot(dir2)
+				
+				if (dot12 > 0.99){
+					//lines overlap
+					return "overlap"
+				} else if (dot12 < 0.1 && dot12 > -0.1){
+					//lines are perpendicular
+					return "elbow"
+				} else if (dot12 < -0.99){
+					//continue straight
+					return "straight"
+				} else {
+					return "other angle"
+				}
+			} else if (this.connections.length == 3){
+				var dir1 = this.connections[0].getDirection(this)
+				var dir2 = this.connections[1].getDirection(this)
+				var dir3 = this.connections[2].getDirection(this)
+				
+				var dot12 = new THREE.Vector3().copy(dir1).dot(dir2)
+				var dot13 = new THREE.Vector3().copy(dir1).dot(dir3)
+				var dot23 = new THREE.Vector3().copy(dir2).dot(dir3)
+				
+				if (Math.max(dot12,dot13,dot23) > 0.99){
+					//at least 2 lines overlap
+					return "overlap(3)"
+				} else if (Math.abs(dot12)<0.1 && Math.abs(dot13)<0.1 && dot23 < -0.99){
+					//branch pipe is 1
+					return "branch 1"
+				} else if (Math.abs(dot12)<0.1 && Math.abs(dot23)<0.1 && dot13 < -0.99){
+					//branch pipe is 2
+					return "branch 2"
+				} else if (Math.abs(dot13)<0.1 && Math.abs(dot23)<0.1 && dot12 < -0.99){
+					//branch pipe is 3
+					return "branch 3"
+				} else {
+					return "other 3 angle"
+				}
+				
 			}
 			
 		},
