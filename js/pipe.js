@@ -125,14 +125,17 @@
 
 				if (!isDelta) {
 					positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units);
+					// add alert if parseLength returns null (bad format)
 					deltaElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim] - context.cursor.start[dim], context.units);
 
 				} else {
 					if (dim == 'l') {
 						positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units);
+						// add alert if parseLength returns null (bad format)
 
 					} else {
 						positionSpecs[dim] = PIPE.calc.parseLength(elem.value, context.units) + context.cursor.start[dim];
+						// add alert if parseLength returns null (bad format)
 						posElems[dim].value = PIPE.calc.formatLength(positionSpecs[dim], context.units);
 
 					}

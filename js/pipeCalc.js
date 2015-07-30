@@ -20,7 +20,7 @@
 	CALC.parseFeetInches = function (fi) {
 		//parses a string as feet and inches, returns meters
 
-		var fiRE = /(?:^(\d*)(?!(?:"|(?:[\s-](?:\d+)\/(?:\d+)")))'?)?(?:(?:[\s-]?(\d*))?(?:[\s-](\d+)\/(\d+))?"?)?$/g;
+		var fiRE = /^(-?)(?:(\d*)(?!(?:"|(?:[\s](?:\d+)\/(?:\d+)")))'?)?(?:(?:[\s]?(\d*))?(?:[\s](\d+)\/(\d+))?"?)?$/g;
 
 		var matched = fiRE.exec(fi);
 
@@ -29,22 +29,24 @@
 		if (matched) {
 
 
-			if (matched[4] == undefined) {
+			if (matched[5] == undefined) {
 
-				matched[4] = 1;
+				matched[5] = 1;
 
 			}
 
-			for (i = 1; i < matched.length; i++) {
-				console.log(matched[i]);
+			for (i = 2; i < matched.length; i++) {
 				if (matched[i] === undefined) {
 					matched[i] = 0;
 				}
 				matched[i] = Number(matched[i]);
-				console.log(matched[i]);
 			}
 
-			feet = matched[1] + (matched[2] + matched[3] / matched[4]) / 12;
+			feet = matched[2] + (matched[3] + matched[4] / matched[5]) / 12;
+			if (matched[1]=="-"){
+				feet *= -1
+			}
+			
 			meters = feet * 0.3048;
 		}
 
@@ -56,11 +58,18 @@
 
 		if (m == 0) {
 
-			return 0;
+			return "0";
 
 		}
 
-		var feet, inches, numerator, denominator, remInches;
+		var neg, feet, inches, numerator, denominator, remInches;
+		
+		if (m < 0){
+			neg = "-";
+			m *= -1;
+		} else {
+			neg = "";
+		}
 
 		feet = ~~(m / 0.3048);
 		remInches = (m - feet * 0.3048) / 0.0254;
@@ -78,17 +87,17 @@
 
 		if (numerator == 0) {
 
-			return feet + "' " + inches + '"';
+			return neg + feet + "' " + inches + '"';
 
 		} else if (numerator == denominator) {
 
 			inches++;
 
-			return feet + "' " + inches + '"';
+			return neg + feet + "' " + inches + '"';
 
 		} else {
 
-			return feet + "' " + inches + " " + numerator + "/" + denominator + '"';
+			return neg + feet + "' " + inches + " " + numerator + "/" + denominator + '"';
 
 		}
 	};
