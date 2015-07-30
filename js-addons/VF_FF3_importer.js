@@ -637,9 +637,7 @@
 	
 // Process files
 	
-	console.log(window.PIPE)
-	
-	if (window.PIPE !== undefined){
+	if (window.PIPE !== undefined && PIPE.fileLoaders !== undefined){
 		
 		var loadVFxl = {}
 		
@@ -648,6 +646,8 @@
 		loadVFxl.func = VF_FF.processVFxl
 		
 		PIPE.fileLoaders.push(loadVFxl)
+	} else {
+		console.warn("Failed to add VFxl Importer.")
 	}
 	
 	
