@@ -1,7 +1,9 @@
 window.onload = function () {
 
-var width = 960,
-    height = 500,
+var container = d3.select("#network")
+
+var width = container.style("width").slice(0,-2),
+    height = container.style("height").slice(0,-2),
     fill = d3.scale.category20();
 
 // mouse event vars
@@ -263,5 +265,99 @@ function keydown() {
     }
   }
 }
+
+
+document.getElementById("file-box").addEventListener("click",
+    function (e) { e.stopPropagation(); },
+    false);
+
+document.getElementById("save-file").addEventListener("click",
+    function (e) {
+        e.stopPropagation();
+        pipeModel.saveToFile();
+    },
+    false);
+
+document.getElementById("load-file").addEventListener("change",
+    function (e) {
+        e.stopPropagation();
+        var file = this.files[0];
+        PIPE.loadFromFile(file,pipeModel);
+    },
+    false);
+    
+    
+    
+    
+    
+    
+	var loadPipe = {}
+	
+	loadPipe.test = /\.pipe$/i
+	
+	loadPipe.func = function (file,model) {
+
+		var reader = new FileReader();
+
+		reader.onload = function () {
+
+			model.loadJSON(reader.result);
+            
+            for(newNode in model.nodes){
+                if (model.nodes.hasOwnProperty(newNode)){
+                    model.nodes[newNode].x = 0;
+                    model.nodes[newNode].y = 0;
+                    nodes.push(model.nodes[newNode]);
+                    
+                    
+                }
+                
+            }
+            
+            for(newLink in model.pipes){
+                if (model.pipes.hasOwnProperty(newLink)){
+                    model.pipes[newLink].source = model.pipes[newLink].node1;
+                    model.pipes[newLink].target = model.pipes[newLink].node2;
+                    links.push(model.pipes[newLink]);
+                }
+            }
+            
+            redraw()
+
+
+		};
+
+		reader.readAsText(file);
+
+	}
+	
+	PIPE.fileLoaders = [
+		loadPipe
+	];
+	
+	PIPE.loadFromFile = function (file,model){
+		
+		var i;
+        
+        model.clear()
+		
+		for (i=0; i<PIPE.fileLoaders.length; i++){
+			var ld = PIPE.fileLoaders[i];
+			if (ld.test.exec(file.name)){
+				ld.func(file,model);
+				return
+			}
+		}
+		console.error("file type not recognized.")
+
+	}
+    
+var pipeModel = new PIPE.Model();
+document.pipeModel = pipeModel;
+
+
+
+
+
 
 }

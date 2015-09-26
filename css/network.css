@@ -1,8 +1,14 @@
 body {
   font: 13px sans-serif;
-  position: relative;
-  width: 960px;
-  height: 500px;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow:hidden;
+}
+
+#network{
+    height:100%;
+    width:100%;
 }
 
 .node {
@@ -35,4 +41,30 @@ body {
 
 .link_selected {
   stroke: #ff7f0e;
+}
+
+/* file box */
+/*=========================================*/
+
+div#file-box{
+    position:absolute;
+    left:20px;
+    bottom:20px;
+	box-shadow: 10px 5px 10px grey;
+	background-color:white;
+	padding:5px;
+}
+
+#save-file{
+	background-color:white;
+	padding:5px;
+	text-align:center;
+}
+
+#save-file:hover{
+	background-color:lightgreen;
+}
+
+#load-file{
+	padding: 5px;
 }
