@@ -192,3 +192,23 @@ div#file-box{
 #load-file{
 	padding: 5px;
 }
+
+/* left menu */
+/*=========================================*/
+
+div#left-menu{
+    background-color:lightblue;
+    height:100%;
+    position:absolute;
+    width:100px;
+    left:-80px;
+    top:0px;
+}
+
+div#left-menu:hover{
+    left:0px;
+}
+
+
+
+
