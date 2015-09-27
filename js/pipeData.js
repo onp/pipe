@@ -10,6 +10,8 @@
 	PIPE.Model = function () {
 		this.pipes = {};
 		this.nodes = {};
+        this.lines = {};
+        this.vessels = {};
 	};
 
 	PIPE.Model.prototype = {
@@ -84,22 +86,41 @@
 		}
 
 	};
+    
+	// Site /////////////////////////////////////////////////////////////
+
+	PIPE.Site = function (name, data, uuid) {
+        this.uuid = uuid || THREE.Math.generateUUID();
+        this.name = name
+        
+        this.groundElevation = data.groundElevation || 0;
+        this.minEast = data.minEast || -5000;
+        this.maxEast = data.maxEast || 5000;
+        this.minNorth = data.minNorth || -5000;
+        this.maxNorth = data.maxNorth || 5000;
+        
+    }
+    
+    PIPE.Site.prototype = {
+        
+        constructor: PIPE.Site;
+    }
 
 	// Segment //////////////////////////////////////////////////////////
 
-	PIPE.Segment = function (node1, node2, diameter, uuid, name) {
-		this.node1 = node1;
+	PIPE.Segment = function (node1, node2, diameter, uuid, line) {
+		this.uuid = uuid || THREE.Math.generateUUID();
+        
+        this.node1 = node1;
 		this.node2 = node2 || new PIPE.Node(new THREE.Vector3());
 
 		this.diameter = diameter || PIPE.defaultDiameter;
-
-		this.uuid = uuid || THREE.Math.generateUUID();
 		this.color = 0x00ff00;
-
-		this.name = name;
 
 		this.node1.addConnection(this);
 		this.node2.addConnection(this);
+        
+        this.line = line || new PIPE.Line()
 
 	};
 
@@ -190,8 +211,8 @@
 
 	PIPE.Node = function (position, uuid, type, name) {
 
-		this.position = position;
 		this.uuid = uuid || THREE.Math.generateUUID();
+        this.position = position;
 		this.color = 0xff0000;
 		this.name = name;
 
@@ -300,7 +321,9 @@
 					return "other 3 angle"
 				}
 				
-			}
+			} else if (this.connections.length > 3){
+                return "4 or more connections."
+            }
 			
 		},
 
@@ -362,9 +385,44 @@
 		}
 
 	};
+    
+	// Line /////////////////////////////////////////////////////////////
+    
+    PIPE.Line = function (lineNumber, data, uuid) {
+        this.uuid = uuid || THREE.Math.generateUUID();
+        this.lineNumber = lineNumber || this.uuid.slice(0,6);
+        
+        this.segments = [];
+    }
+    
+    PIPE.Line.prototype = {
+        
+        constructor: PIPE.Line;
+        
+        
+        
+    }
+    
+	// Vessel ///////////////////////////////////////////////////////////
 
-
-
+    PIPE.Vessel = function (position, vesselNumber, vesselName, data, uuid) {
+        this.uuid = uuid || THREE.Math.generateUUID();
+        this.position = position;
+        this.vesselNumber = vesselNumber;
+        this.vesselName = vesselName;
+        
+        this.vesselType = type || "vessel";
+        this.numericCode = numericCode;
+        this.geometry = data.geometry;
+        this.nozzles = data.nozzles;
+        
+    }
+    
+    PIPE.Vessel.prototype = {
+        
+        constructor: PIPE.Vessel;
+        
+    }
 
 
 }(window.PIPE = window.PIPE || {}));
