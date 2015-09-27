@@ -14,12 +14,14 @@ var SelectorFactory = function (context) {
         if (selector.hoveredPipe !== null) {
             if (selector.hoveredPipe.mesh.material.color.getHex() == 0x0000ff) {
                 selector.hoveredPipe.mesh.material.color.setHex(selector.hoveredPipe.color);
+                context.selectMode.clearHover();
             }
         }
 
         if (selector.hoveredNode !== null) {
             if (selector.hoveredNode.mesh.material.color.getHex() == 0x0000ff) {
                 selector.hoveredNode.mesh.material.color.setHex(selector.hoveredNode.color);
+                context.selectMode.clearHover();
             }
         }
     };
@@ -37,6 +39,7 @@ var SelectorFactory = function (context) {
             selector.hoveredPipe = pipeIntersects[0].object.userData.owner;
             if (selector.hoveredPipe.color == selector.hoveredPipe.mesh.material.color.getHex()) {
                 pipeIntersects[0].object.material.color.setHex(0x0000ff);
+                context.selectMode.hoverPipe(selector.hoveredPipe);
             }
 
         } else {
@@ -49,6 +52,8 @@ var SelectorFactory = function (context) {
             console.log(selector.hoveredNode.analyzeConnections())
             if (selector.hoveredNode.color == selector.hoveredNode.mesh.material.color.getHex()) {
                 nodeIntersects[0].object.material.color.setHex(0x0000ff);
+                console.log("hi")
+                context.selectMode.hoverNode(selector.hoveredNode,"hovered");
             }
 
         } else {

@@ -357,12 +357,14 @@ var SelectorFactory = function (context) {
         if (selector.hoveredPipe !== null) {
             if (selector.hoveredPipe.mesh.material.color.getHex() == 0x0000ff) {
                 selector.hoveredPipe.mesh.material.color.setHex(selector.hoveredPipe.color);
+                context.selectMode.clearHover();
             }
         }
 
         if (selector.hoveredNode !== null) {
             if (selector.hoveredNode.mesh.material.color.getHex() == 0x0000ff) {
                 selector.hoveredNode.mesh.material.color.setHex(selector.hoveredNode.color);
+                context.selectMode.clearHover();
             }
         }
     };
@@ -380,6 +382,7 @@ var SelectorFactory = function (context) {
             selector.hoveredPipe = pipeIntersects[0].object.userData.owner;
             if (selector.hoveredPipe.color == selector.hoveredPipe.mesh.material.color.getHex()) {
                 pipeIntersects[0].object.material.color.setHex(0x0000ff);
+                context.selectMode.hoverPipe(selector.hoveredPipe);
             }
 
         } else {
@@ -392,6 +395,8 @@ var SelectorFactory = function (context) {
             console.log(selector.hoveredNode.analyzeConnections())
             if (selector.hoveredNode.color == selector.hoveredNode.mesh.material.color.getHex()) {
                 nodeIntersects[0].object.material.color.setHex(0x0000ff);
+                console.log("hi")
+                context.selectMode.hoverNode(selector.hoveredNode,"hovered");
             }
 
         } else {
@@ -719,7 +724,9 @@ var SelectModeFactory = function (context) {
         name: "select",
         state: "off",
         nodes: [],
-        pipes: []
+        pipes: [],
+        hoveredPipe: null,
+        hoveredNode: null
     };
 
 
@@ -749,10 +756,8 @@ var SelectModeFactory = function (context) {
         this.state = "off";
         context.mode = undefined;
     };
-
-    selectMode.addNode = function (sNode) {
-        
-        selectMode.nElem.parentNode.classList.remove("hidden")
+    
+    selectMode.generateNodeElem = function (sNode) {
         
         var elem = document.createElement("tr");
         elem.classList.add("obj");
@@ -764,7 +769,7 @@ var SelectModeFactory = function (context) {
                         PIPE.calc.formatLength(sNode.position.z, context.units) + 
                         "</td>";
 
-        selectMode.nElem.appendChild(elem);
+        
         
         var typeSelector = document.createElement("select");
         typeSelector.innerHTML = "<option value='node'>node</option>" +
@@ -779,14 +784,13 @@ var SelectModeFactory = function (context) {
         var tsCont = document.createElement("td");
         elem.appendChild(tsCont);
         tsCont.appendChild(typeSelector);
-
-        selectMode.nodes.push(sNode);
-    };
-
-    selectMode.addPipe = function (sPipe) {
         
-        selectMode.pElem.parentNode.classList.remove("hidden")
-
+        return elem;
+        
+    }
+    
+    selectMode.generatePipeElem = function (sPipe) {
+        
         var elem = document.createElement("tr");
         elem.classList.add("obj");
         elem.innerHTML = "<td>" +
@@ -797,9 +801,6 @@ var SelectModeFactory = function (context) {
                         PIPE.calc.formatLength(sPipe.length(), context.units) +
                         "</td>";
 
-                        
-        selectMode.pElem.appendChild(elem);
-        
         var diamSetter = document.createElement("input");
         diamSetter.addEventListener("input",
             function (e) {
@@ -813,30 +814,120 @@ var SelectModeFactory = function (context) {
         elem.appendChild(dsCont);
         dsCont.appendChild(diamSetter);
         
-        selectMode.pipes.push(sPipe);
+        return elem
+        
+    }
+    
+    selectMode.hoverNode = function (sNode) {
+        if (selectMode.nodes.indexOf(sNode) == -1) {
+            
+            selectMode.nElem.parentNode.classList.remove("hidden")
+            
+            var elem = selectMode.generateNodeElem(sNode)
+            
+            selectMode.nElem.appendChild(elem);
+            
+            selectMode.hoveredNode = elem;
+        }
+    }
+    
+    selectMode.hoverPipe = function (sPipe){
+        
+        if (selectMode.pipes.indexOf(sPipe) == -1) {
+            
+            selectMode.pElem.parentNode.classList.remove("hidden");
+            
+            var elem = selectMode.generatePipeElem(sPipe);
+            
+            selectMode.pElem.appendChild(elem);
+            
+            selectMode.hoveredPipe = elem;
+            
+        }
+        
+    }
+    
+    selectMode.addNode = function (sNode) {
+        
+        selectMode.clearHover();
+        
+        selectMode.nElem.parentNode.classList.remove("hidden")
+        
+        var elem = selectMode.generateNodeElem(sNode)
+        
+        selectMode.nElem.appendChild(elem);
+        
+        selectMode.nodes.push(sNode);
     };
 
-    selectMode.clearSelection = function (deleteSelected) {
+    selectMode.addPipe = function (sPipe) {
+        
+        selectMode.clearHover();
+        
+        selectMode.pElem.parentNode.classList.remove("hidden");
+
+        var elem = selectMode.generatePipeElem(sPipe);
+        
+        selectMode.pElem.appendChild(elem);
+        
+        selectMode.pipes.push(sPipe);
+    };
+    
+    selectMode.deleteSelection = function () {
         var i;
-        if (!deleteSelected) {
-            for (i = 0; i < selectMode.nodes.length; i++) {
-                selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color);
-            }
-            for (i = 0; i < selectMode.pipes.length; i++) {
-                selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color);
-            }
-        } else {
-            for (i = 0; i < selectMode.nodes.length; i++) {
-                context.visibleNodes.remove(selectMode.nodes[i].mesh);
-                delete context.model.nodes[selectMode.nodes[i].uuid];
-            }
-            for (i = 0; i < selectMode.pipes.length; i++) {
-                context.visiblePipes.remove(selectMode.pipes[i].mesh);
-                context.model.pipes[selectMode.pipes[i].uuid].breakConnections();
-                delete context.model.pipes[selectMode.pipes[i].uuid];
-            }
+        
+        for (i = 0; i < selectMode.nodes.length; i++) {
+            context.visibleNodes.remove(selectMode.nodes[i].mesh);
+            delete context.model.nodes[selectMode.nodes[i].uuid];
+        }
+        
+        for (i = 0; i < selectMode.pipes.length; i++) {
+            context.visiblePipes.remove(selectMode.pipes[i].mesh);
+            context.model.pipes[selectMode.pipes[i].uuid].breakConnections();
+            delete context.model.pipes[selectMode.pipes[i].uuid];
+        }
+        
+        selectMode.clearDisplay();
+        
+    }
+    
+    selectMode.clearHover = function () {
+        if (selectMode.hoveredPipe !== null){
+            selectMode.pElem.removeChild(selectMode.hoveredPipe);
+            selectMode.hoveredPipe = null;
         }
 
+        if (selectMode.hoveredNode !== null){
+            selectMode.nElem.removeChild(selectMode.hoveredNode);
+            selectMode.hoveredNode = null;
+        }
+        
+        if (selectMode.pipes.length < 1){
+            selectMode.pElem.parentNode.classList.add("hidden")
+        }
+
+        if (selectMode.nodes.length < 1){
+            selectMode.nElem.parentNode.classList.add("hidden")
+        }
+        
+    }
+
+    selectMode.clearSelection = function () {
+        var i;
+
+        for (i = 0; i < selectMode.nodes.length; i++) {
+            selectMode.nodes[i].mesh.material.color.setHex(selectMode.nodes[i].color);
+        }
+        for (i = 0; i < selectMode.pipes.length; i++) {
+            selectMode.pipes[i].mesh.material.color.setHex(selectMode.pipes[i].color);
+        }
+        
+        selectMode.clearDisplay();
+
+    };
+    
+    selectMode.clearDisplay = function () {
+        
         selectMode.pElem.innerHTML = "";
         selectMode.nElem.innerHTML = "";
         
@@ -845,7 +936,7 @@ var SelectModeFactory = function (context) {
 
         selectMode.nodes = [];
         selectMode.pipes = [];
-    };
+    }
 
     selectMode.onClick = function () {
 
@@ -875,7 +966,7 @@ var SelectModeFactory = function (context) {
     selectMode.onKeyDown  = function (e) {
         if (e.keyCode == 46 || e.keyCode == 8) {
             if (document.activeElement.tagName !== "INPUT") {
-                selectMode.clearSelection(true);
+                selectMode.deleteSelection();
             }
         } else if (e.keyCode == 27) {
             context.viewMode.enter();
